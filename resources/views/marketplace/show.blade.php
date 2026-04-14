@@ -154,19 +154,24 @@
 
                                         <div class="mb-3">
                                             <label class="block text-gray-400 text-sm mb-2">Seleziona carta da offrire</label>
-                                            <select name="offered_card_name" id="trade-select" required
-                                                class="w-full px-4 py-3 rounded-xl text-white text-sm focus:outline-none border mb-3"
-                                                style="background: rgba(45,17,84,0.95); border-color: rgba(124,58,237,0.5); color: #e8e6e0;">
-                                                class="w-full px-4 py-3 rounded-xl text-white text-sm focus:outline-none border mb-3"
-                                                style="background: rgba(0,0,0,0.4); border-color: rgba(59,130,246,0.3);">
-                                                <option value="">Seleziona una carta...</option>
+                                            <select id="trade-select-dropdown"
+                                                class="w-full px-4 py-3 rounded-xl text-white text-sm focus:outline-none border mb-2"
+                                                style="background: rgba(45,17,84,0.95); border-color: rgba(124,58,237,0.5); color: #e8e6e0;"
+                                                onchange="handleTradeSelect(this)">
+                                                <option value="">Seleziona una carta dal catalogo...</option>
                                                 @foreach ($catalogCards as $cc)
                                                     <option value="{{ $cc->name }} - {{ $cc->set_name }}">
                                                         {{ $cc->name }} — {{ $cc->set_name }}
                                                         {{ $cc->card_number ? '#' . $cc->card_number : '' }}
                                                     </option>
                                                 @endforeach
+                                                <option value="__manual__">✏️ Scrivi manualmente...</option>
                                             </select>
+
+                                            <input type="text" name="offered_card_name" id="trade-manual-input"
+                                                placeholder="Scrivi il nome della carta..."
+                                                class="w-full px-4 py-3 rounded-xl text-white text-sm focus:outline-none border mb-3 hidden"
+                                                style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
                                         </div>
 
                                         <button type="submit"
@@ -204,6 +209,22 @@
                         opt.style.display = opt.text.toLowerCase().includes(query) ? '' : 'none';
                     });
                 });
+            }
+
+            function handleTradeSelect(select) {
+                const manualInput = document.getElementById('trade-manual-input');
+                if (select.value === '__manual__') {
+                    manualInput.classList.remove('hidden');
+                    manualInput.required = true;
+                    select.name = '';
+                    manualInput.name = 'offered_card_name';
+                    manualInput.focus();
+                } else {
+                    manualInput.classList.add('hidden');
+                    manualInput.required = false;
+                    select.name = 'offered_card_name';
+                    manualInput.name = '';
+                }
             }
         </script>
     @endpush
