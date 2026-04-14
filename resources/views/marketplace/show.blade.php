@@ -226,6 +226,31 @@
                     manualInput.name = '';
                 }
             }
+
+            // Quando l'utente scrive una carta manualmente, la aggiunge al catalogo
+            document.getElementById('trade-manual-input')?.addEventListener('blur', function() {
+                const cardName = this.value.trim();
+                if (cardName.length > 2) {
+                    fetch('{{ route('catalog.add-card') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            card_name: cardName,
+                            category: '{{ $card->tcg_category }}'
+                        })
+                    }).then(() => {
+                        // Aggiunge la carta al select
+                        const select = document.getElementById('trade-select-dropdown');
+                        const option = document.createElement('option');
+                        option.value = cardName;
+                        option.text = cardName;
+                        select.add(option, select.options[select.options.length - 1]);
+                    });
+                }
+            });
         </script>
     @endpush
 

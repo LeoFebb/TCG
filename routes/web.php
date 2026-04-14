@@ -129,3 +129,22 @@ Route::post('/stripe/webhook', [EscrowController::class, 'handleWebhook'])->name
 
 // Auth routes Breeze
 require __DIR__ . '/auth.php';
+
+Route::post('/catalog/add-card', function (\Illuminate\Http\Request $request) {
+    if ($request->filled('card_name')) {
+        \App\Models\TcgCardCatalog::firstOrCreate(
+            [
+                'name' => $request->card_name,
+                'tcg_category' => $request->category ?? 'unknown',
+            ],
+            [
+                'set_name' => $request->set_name ?? 'Personalizzata',
+                'card_number' => null,
+                'rarity' => null,
+            ],
+        );
+    }
+    return response()->json(['success' => true]);
+})
+    ->name('catalog.add-card')
+    ->middleware('auth');
