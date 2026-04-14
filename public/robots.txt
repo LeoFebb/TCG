@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard-utente
+Disallow: /transazioni
+Disallow: /validator/
+Disallow: /checkout/
+Disallow: /le-mie-carte
+
+Sitemap: {{ url('/sitemap.xml') }}

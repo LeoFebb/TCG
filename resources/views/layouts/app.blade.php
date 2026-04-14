@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'TCG Vault - Marketplace TCG Certificato')</title>
+    <meta name="description" content="@yield('description', 'Compra, vendi e scambia carte da gioco rare con la protezione del sistema escrow TCG Vault.')">
+    <meta name="keywords" content="@yield('keywords', 'carte pokemon, magic the gathering, yugioh, marketplace tcg, carte rare')">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta property="og:title" content="@yield('title', 'TCG Vault')">
+    <meta property="og:description" content="@yield('description', 'Marketplace TCG Certificato')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-image.jpg'))">
+    <meta property="og:site_name" content="TCG Vault">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'TCG Vault')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/og-image.jpg'))">
+    @stack('schema')
+    <script src="https://cdn.tailwindcss.com"></script>
+    @stack('head')
+    <style>
+        nav::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="text-gray-100 min-h-screen"
+    style="background: linear-gradient(180deg, #2d1154 0%, #1a0a2e 30%, #0d0d0d 60%, #000000 100%); background-attachment: fixed;">
+
+    <header class="border-b border-purple-900/50 sticky top-0 z-50"
+        style="background: rgba(45, 17, 84, 0.95); backdrop-filter: blur(10px);">
+        <div class="max-w-7xl mx-auto px-6">
+
+            <div class="flex items-center justify-between py-4">
+                <a href="{{ route('home') }}" class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                        <span class="text-white font-black text-lg">T</span>
+                    </div>
+                    <div>
+                        <span class="text-white font-black text-xl tracking-wide">TCG</span>
+                        <span class="text-purple-400 font-black text-xl tracking-wide"> Vault</span>
+                    </div>
+                </a>
+
+                <form method="GET" action="{{ route('marketplace.search') }}"
+                    class="hidden md:flex flex-1 max-w-md mx-8">
+                    <div class="relative w-full">
+                        <input type="text" name="q" value="{{ request('q') }}"
+                            placeholder="Cerca carte, set, categorie..."
+                            class="w-full bg-black/40 border border-purple-800/50 text-gray-300 px-4 py-2 rounded-lg text-xs focus:outline-none focus:border-purple-500 placeholder-gray-600">
+                        <button type="submit">
+                            <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-600" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="flex items-center gap-3">
+                    @guest
+                        <a href="{{ route('login') }}"
+                            class="text-gray-400 hover:text-white text-xs transition-colors">Accedi</a>
+                        <a href="{{ route('register') }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-white"
+                            style="background: linear-gradient(135deg, #7c3aed, #a855f7);">Registrati</a>
+                    @else
+                        @if (auth()->user()->role !== 'validator')
+                            <a href="{{ route('cards.create') }}"
+                                class="px-4 py-2 rounded-lg text-xs font-semibold text-white hidden md:block"
+                                style="background: linear-gradient(135deg, #7c3aed, #a855f7);">+ Vendi carta</a>
+                            <a href="{{ route('cards.my') }}"
+                                class="px-4 py-2 rounded-lg text-xs text-gray-400 border border-purple-800/50 hover:text-white transition hidden md:block">
+                                Le mie carte
+                            </a>
+                            <a href="{{ route('transactions.index') }}"
+                                class="px-4 py-2 rounded-lg text-xs text-gray-400 border border-purple-800/50 hover:text-white transition hidden md:block">
+                                Le mie transazioni
+                            </a>
+                            <a href="{{ route('user.dashboard') }}"
+                                class="px-4 py-2 rounded-lg text-xs text-gray-400 border border-purple-800/50 hover:text-white transition hidden md:block">
+                                Dashboard
+                            </a>
+                        @endif
+                        <a href="{{ auth()->user()->role === 'validator' ? route('validator.profile.edit') : route('profile.show') }}"
+                            class="flex items-center gap-2 border border-purple-800/50 rounded-lg px-3 py-2 hover:border-purple-500 transition">
+                            <div
+                                class="w-6 h-6 rounded-full bg-purple-700 flex items-center justify-center overflow-hidden">
+                                @if (auth()->user()->profile_photo)
+                                    <img src="{{ Storage::url(auth()->user()->profile_photo) }}"
+                                        class="w-full h-full object-cover">
+                                @else
+                                    <span class="text-white text-xs font-bold">
+                                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                    </span>
+                                @endif
+                            </div>
+                            <span class="text-gray-300 text-xs hidden md:block">{{ auth()->user()->name }}</span>
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="text-gray-500 hover:text-red-400 text-xs transition-colors">Esci</button>
+                        </form>
+                    @endguest
+                </div>
+            </div>
+
+            <nav class="flex items-center justify-center gap-1 pb-2 overflow-x-auto"
+                style="-ms-overflow-style: none; scrollbar-width: none;">
+                <a href="{{ route('home') }}"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                    &#127968; Home
+                </a>
+                <a href="{{ route('marketplace.category', 'pokemon') }}"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                    <img src="https://images.pokemontcg.io/base1/4_hires.png" class="w-4 h-4 object-contain rounded">
+                    Pokemon
+                </a>
+                <a href="{{ route('marketplace.category', 'mtg') }}"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                    &#129668; Magic TG
+                </a>
+                <a href="{{ route('marketplace.category', 'yugioh') }}"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                    &#128065; Yu-Gi-Oh!
+                </a>
+                <a href="{{ route('marketplace.category', 'onepiece') }}"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                    &#9760;&#65039; One Piece
+                </a>
+                <a href="{{ route('marketplace.category', 'dragon_ball_super') }}"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                    &#129409; Dragon Ball
+                </a>
+                <a href="{{ route('marketplace.category', 'naruto') }}"
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                    &#127811; Naruto
+                </a>
+            </nav>
+            @if (auth()->check() && auth()->user()->role === 'validator')
+                <nav class="flex items-center justify-center gap-1 pb-3 overflow-x-auto"
+                    style="-ms-overflow-style: none; scrollbar-width: none;">
+                    <a href="{{ route('validator.dashboard') }}"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                        &#9889; Dashboard Validatore
+                    </a>
+                    <a href="{{ route('validator.profile.edit') }}"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                        &#128100; Il mio profilo
+                    </a>
+                </nav>
+            @else
+                <nav class="flex items-center justify-center gap-1 pb-3 overflow-x-auto"
+                    style="-ms-overflow-style: none; scrollbar-width: none;">
+                    <a href="{{ route('marketplace.index') }}"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                        &#128722; Marketplace
+                    </a>
+                    <a href="{{ route('marketplace.trades') }}"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                        &#128260; Permute
+                    </a>
+                    <a href="{{ route('validators.list') }}"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                        &#128104;&#8205;&#128188; I nostri validatori
+                    </a>
+                    <a href="{{ route('validator.register.form') }}"
+                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                        &#128737; Diventa Validatore
+                    </a>
+                </nav>
+            @endif
+        </div>
+    </header>
+
+    @if (session('success'))
+        <div class="max-w-7xl mx-auto px-6 pt-4">
+            <div class="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 text-xs rounded-lg">
+                {{ session('success') }}
+            </div>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="max-w-7xl mx-auto px-6 pt-4">
+            <div class="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 text-xs rounded-lg">
+                {{ session('error') }}
+            </div>
+        </div>
+    @endif
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        @yield('content')
+    </main>
+
+    <footer class="mt-20 border-t border-purple-900/30">
+        <div class="max-w-7xl mx-auto px-6 py-8 text-center">
+            <p class="text-gray-600 text-xs">TCG Vault - Marketplace TCG Certificato</p>
+            <div class="flex justify-center gap-6 mt-3">
+                <a href="{{ route('privacy') }}" class="text-gray-600 text-xs hover:text-purple-400 transition">
+                    Privacy Policy
+                </a>
+                <a href="{{ route('terms') }}" class="text-gray-600 text-xs hover:text-purple-400 transition">
+                    Termini di servizio
+                </a>
+            </div>
+        </div>
+    </footer>
+    {{-- Banner Cookie --}}
+    @if (!request()->cookie('cookie_consent'))
+        <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 z-50 p-4"
+            style="background: rgba(13,0,26,0.97); border-top: 1px solid rgba(124,58,237,0.5); backdrop-filter: blur(10px);">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl flex-shrink-0">&#127850;</span>
+                    <div>
+                        <p class="text-white text-sm font-bold mb-1">Utilizziamo i cookie</p>
+                        <p class="text-gray-400 text-xs leading-relaxed">
+                            Utilizziamo cookie tecnici necessari al funzionamento della piattaforma.
+                            Non utilizziamo cookie di profilazione o tracciamento.
+                            <a href="{{ route('privacy') }}" class="text-purple-400 hover:text-purple-300 underline">
+                                Leggi la Privacy Policy
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-3 flex-shrink-0">
+                    <a href="{{ route('privacy') }}"
+                        class="px-4 py-2 rounded-lg text-xs text-gray-400 border border-gray-700 hover:text-white transition">
+                        Maggiori info
+                    </a>
+                    <button onclick="acceptCookies()"
+                        class="px-6 py-2 rounded-lg text-xs font-bold text-white transition hover:opacity-90"
+                        style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                        Accetta
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+    @push('scripts')
+        <script>
+            function acceptCookies() {
+                document.cookie = "cookie_consent=true; max-age=" + (60 * 60 * 24 * 365) + "; path=/";
+                document.getElementById('cookie-banner').style.display = 'none';
+            }
+        </script>
+    @endpush
+
+    @stack('scripts')
+</body>
+
+</html>
