@@ -168,7 +168,7 @@ class ValidatorController extends Controller
                 'validated_at' => now(),
             ]);
 
-            // Ripristina la carta come disponibile (o in_negotiation per review admin)
+            // La carta rimane bloccata - non torna in vendita
             // L'admin deciderà il destino finale della carta
             $transaction->card->update(['status' => 'in_negotiation']);
 
