@@ -138,43 +138,36 @@ class MarketplaceController extends Controller
      */
     public function createTradeOffer(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'card_id' => 'required|exists:cards,id',
-            'offered_card_id' => 'required|exists:cards,id|different:card_id',
+            'offered_card_name' => 'required|string|max:255',
+            'buyer_validator_id' => 'required|exists:users,id',
         ]);
 
-        $targetCard = Card::findOrFail($validated['card_id']);
-        $offeredCard = Card::findOrFail($validated['offered_card_id']);
+        $targetCard = Card::findOrFail($request->card_id);
 
-        // Verifica che la carta offerta appartenga all'acquirente
-        abort_if($offeredCard->user_id !== Auth::id(), 403, 'Non puoi offrire una carta che non ti appartiene.');
-
-        // Verifica che la carta target sia disponibile per permuta
         abort_if(!$targetCard->available_for_trade || $targetCard->status !== 'available', 422);
-        abort_if($targetCard->user_id === Auth::id(), 403, 'Non puoi fare permuta con te stesso.');
+        abort_if($targetCard->user_id === Auth::id(), 403);
 
-        DB::transaction(function () use ($targetCard, $offeredCard) {
-            // Assegna un validatore disponibile (logica round-robin semplificata)
-            // In produzione: algoritmo più sofisticato basato su categoria e carico di lavoro
-            $validator = \App\Models\User::where('role', 'validator')->where('is_verified_validator', true)->whereJsonContains('tcg_categories', $targetCard->tcg_category)->inRandomOrder()->first();
+        Transaction::create([
+            'buyer_id' => Auth::id(),
+            'seller_id' => $targetCard->user_id,
+            'card_id' => $targetCard->id,
+            'offered_card_id' => null,
+            'validator_id' => null, // Scelto dal venditore
+            'buyer_validator_id' => $request->buyer_validator_id,
+            'type' => 'trade',
+            'status' => 'pending',
+            'amount' => 0,
+            'platform_fee' => 0,
+            'shipping_cost' => 5.9,
+            'shipping_country' => 'Italia',
+            'validator_notes' => 'Carta offerta: ' . $request->offered_card_name,
+        ]);
 
-            // Crea la transazione di permuta
-            $transaction = Transaction::create([
-                'buyer_id' => Auth::id(),
-                'seller_id' => $targetCard->user_id,
-                'card_id' => $targetCard->id,
-                'offered_card_id' => $offeredCard->id,
-                'validator_id' => $validator?->id,
-                'type' => 'trade',
-                'status' => 'pending',
-            ]);
+        $targetCard->update(['status' => 'in_negotiation']);
 
-            // Blocca entrambe le carte durante la trattativa
-            $targetCard->update(['status' => 'in_negotiation']);
-            $offeredCard->update(['status' => 'in_negotiation']);
-        });
-
-        return redirect()->back()->with('success', 'Offerta di permuta inviata! Attendi la risposta del venditore.');
+        return redirect()->route('transactions.index')->with('success', 'Offerta di permuta inviata! Attendi la risposta del venditore.');
     }
 
     /**

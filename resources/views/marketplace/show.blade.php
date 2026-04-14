@@ -173,8 +173,21 @@
                                                 class="w-full px-4 py-3 rounded-xl text-white text-sm focus:outline-none border mb-3 hidden"
                                                 style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
                                         </div>
-
-                                        <button type="submit"
+                                        {{-- Scelta validatore acquirente --}}
+                                        <div class="mb-3">
+                                            <label class="block text-gray-400 text-sm mb-2">&#128737; Scegli il tuo
+                                                validatore</label>
+                                            <select name="buyer_validator_id" required
+                                                class="w-full px-4 py-3 rounded-xl text-white text-sm focus:outline-none border mb-3"
+                                                style="background: rgba(45,17,84,0.95); border-color: rgba(59,130,246,0.3);">
+                                                <option value="">Seleziona un validatore...</option>
+                                                @foreach (\App\Models\User::where('role', 'validator')->where('is_verified_validator', true)->whereJsonContains('tcg_categories', $card->tcg_category)->get() as $v)
+                                                    <option value="{{ $v->id }}">{{ $v->name }} —
+                                                        {{ $v->city }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <button type="submit" <button type="submit"
                                             class="w-full py-3 rounded-xl font-bold text-white text-sm border border-blue-700 hover:bg-blue-900/30 transition">
                                             &#128260; Proponi permuta
                                         </button>

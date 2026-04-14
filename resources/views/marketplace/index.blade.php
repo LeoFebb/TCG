@@ -1,8 +1,10 @@
 @extends('layouts.app')
 @section('title', 'Marketplace — Tutte le carte | TCG Vault')
-@section('description', 'Sfoglia migliaia di carte da gioco disponibili su TCG Vault. Pokémon, Magic, Yu-Gi-Oh!, One
+@section('description',
+    'Sfoglia migliaia di carte da gioco disponibili su TCG Vault. Pokémon, Magic, Yu-Gi-Oh!, One
     Piece e molto altro. Acquisto sicuro con sistema escrow.')
-@section('keywords', 'marketplace carte, acquista carte pokemon, magic the gathering vendita, yugioh compra, carte rare
+@section('keywords',
+    'marketplace carte, acquista carte pokemon, magic the gathering vendita, yugioh compra, carte rare
     online')
 
 @section('title', 'Marketplace — TCG Vault')
@@ -58,14 +60,15 @@
 
                 <div>
                     <label class="block text-gray-500 text-xs mb-1 uppercase tracking-wide">Tipo</label>
-                    <select name="type"
-                        class="bg-black/40 border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-purple-500">
+                    <select name="type" class="border text-white text-sm focus:outline-none px-3 py-2.5 rounded-lg"
+                        style="background: rgba(45,17,84,0.95); border-color: rgba(124,58,237,0.5); color: #e8e6e0;">
                         <option value="">Tutte le carte</option>
-                        <option value="sale" {{ request('type') == 'sale' ? 'selected' : '' }}>💰 In vendita</option>
-                        <option value="trade" {{ request('type') == 'trade' ? 'selected' : '' }}>🔄 In permuta</option>
+                        <option value="sale" {{ request('type') == 'sale' ? 'selected' : '' }}>&#128176; In vendita
+                        </option>
+                        <option value="trade" {{ request('type') == 'trade' ? 'selected' : '' }}>&#128260; In permuta
+                        </option>
                     </select>
                 </div>
-
                 <div>
                     <label class="block text-gray-500 text-xs mb-1 uppercase tracking-wide">Condizione</label>
                     <select name="condition"
@@ -202,4 +205,3 @@
     </div>
 
 @endsection
-

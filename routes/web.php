@@ -104,6 +104,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaction/{transaction}/mark-shipped', [TransactionController::class, 'markShipped'])->name('transaction.mark-shipped');
     Route::post('/transaction/{transaction}/completed', [TransactionController::class, 'markCompleted'])->name('transaction.mark-completed');
     Route::post('/transaction/{transaction}/choose-validator', [EscrowController::class, 'chooseValidator'])->name('transaction.choose-validator');
+    Route::post('/transaction/{transaction}/accept-trade', [TransactionController::class, 'acceptTrade'])->name('transaction.accept-trade');
+    Route::post('/transaction/{transaction}/reject-trade', [TransactionController::class, 'rejectTrade'])->name('transaction.reject-trade');
+    Route::get('/shipping/{transaction}/buyer-trade-label', [ShippingController::class, 'generateBuyerTradeLabel'])->name('shipping.buyer-trade-label');
+    Route::get('/shipping/{transaction}/seller-trade-label', [ShippingController::class, 'generateSellerTradeLabel'])->name('shipping.seller-trade-label');
 });
 
 // Acquisto / Permuta

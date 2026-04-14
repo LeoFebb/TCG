@@ -25,6 +25,11 @@
         nav::-webkit-scrollbar {
             display: none;
         }
+
+        select option {
+            background: rgba(45, 17, 84, 0.95);
+            color: #e8e6e0;
+        }
     </style>
 </head>
 
@@ -78,9 +83,25 @@
                                 class="px-4 py-2 rounded-lg text-xs text-gray-400 border border-purple-800/50 hover:text-white transition hidden md:block">
                                 Le mie carte
                             </a>
+                            @php
+                                $activeTransactions = auth()->check()
+                                    ? \App\Models\Transaction::where(function ($q) {
+                                        $q->where('buyer_id', auth()->id())->orWhere('seller_id', auth()->id());
+                                    })
+                                        ->whereNotIn('status', ['completed', 'disputed', 'rejected'])
+                                        ->count()
+                                    : 0;
+                            @endphp
                             <a href="{{ route('transactions.index') }}"
-                                class="px-4 py-2 rounded-lg text-xs text-gray-400 border border-purple-800/50 hover:text-white transition hidden md:block">
-                                Le mie transazioni
+                                class="relative px-4 py-2 rounded-lg text-xs text-gray-400 border border-purple-800/50 hover:text-white transition hidden md:block">
+                                &#128230; Le mie transazioni
+                                @if ($activeTransactions > 0)
+                                    <span
+                                        class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-white flex items-center justify-center font-bold"
+                                        style="background: #a855f7; font-size: 9px;">
+                                        {{ $activeTransactions }}
+                                    </span>
+                                @endif
                             </a>
                             <a href="{{ route('user.dashboard') }}"
                                 class="px-4 py-2 rounded-lg text-xs text-gray-400 border border-purple-800/50 hover:text-white transition hidden md:block">

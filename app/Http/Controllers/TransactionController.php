@@ -25,9 +25,14 @@ class TransactionController extends Controller
 
     public function markShipped(Request $request, Transaction $transaction)
     {
-        // Solo il venditore può confermare la spedizione
-        abort_if($transaction->seller_id !== Auth::id(), 403);
-        abort_if($transaction->status !== 'paid_escrow', 422);
+        abort_if($transaction->seller_id !== Auth::id() && $transaction->buyer_id !== Auth::id(), 403);
+
+        if ($transaction->type === 'trade') {
+            abort_if(!in_array($transaction->status, ['accepted']), 422);
+        } else {
+            abort_if($transaction->status !== 'paid_escrow', 422);
+            abort_if($transaction->seller_id !== Auth::id(), 403);
+        }
 
         $transaction->update([
             'status' => 'in_validation',
@@ -47,5 +52,34 @@ class TransactionController extends Controller
         $transaction->card->update(['status' => 'sold']);
 
         return redirect()->back()->with('success', 'Hai confermato la ricezione della carta!');
+    }
+
+    public function acceptTrade(Request $request, Transaction $transaction)
+    {
+        abort_if($transaction->seller_id !== Auth::id(), 403);
+        abort_if($transaction->status !== 'pending', 422);
+        abort_if($transaction->type !== 'trade', 422);
+
+        $request->validate([
+            'validator_id' => 'required|exists:users,id',
+        ]);
+
+        $transaction->update([
+            'status' => 'accepted',
+            'validator_id' => $request->validator_id,
+        ]);
+
+        return redirect()->back()->with('success', 'Permuta accettata! Ora spedisci la tua carta al tuo validatore.');
+    }
+
+    public function rejectTrade(Transaction $transaction)
+    {
+        abort_if($transaction->seller_id !== Auth::id(), 403);
+        abort_if($transaction->status !== 'pending', 422);
+
+        $transaction->update(['status' => 'rejected']);
+        $transaction->card->update(['status' => 'available']);
+
+        return redirect()->back()->with('success', 'Permuta rifiutata.');
     }
 }

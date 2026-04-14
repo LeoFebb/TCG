@@ -128,16 +128,9 @@ class ValidatorController extends Controller
                 $this->escrowController->releaseFunds($transaction);
                 $transaction->refresh();
             } else {
-                // Per le permute, passa direttamente a shipping
+                // Per le permute non ci sono fondi da sbloccare
+                // Ognuno ha pagato la propria spedizione
                 $transaction->update(['status' => 'shipping']);
-
-                // Aggiorna i proprietari delle carte scambiate
-                $card = $transaction->card;
-                $offeredCard = $transaction->offeredCard;
-
-                // Scambia i proprietari delle carte
-                $card->update(['user_id' => $transaction->buyer_id]);
-                $offeredCard->update(['user_id' => $transaction->seller_id]);
             }
         });
 
