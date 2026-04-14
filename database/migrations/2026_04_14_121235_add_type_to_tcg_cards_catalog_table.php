@@ -6,23 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('tcg_cards_catalog', function (Blueprint $table) {
-            //
+            $table->enum('type', ['sale', 'trade', 'both'])->default('both')->after('image_url');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('tcg_cards_catalog', function (Blueprint $table) {
-            //
+            $table->dropColumn('type');
         });
     }
 };
