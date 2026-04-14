@@ -25,22 +25,39 @@ class TransactionController extends Controller
 
     public function markShipped(Request $request, Transaction $transaction)
     {
-        abort_if($transaction->seller_id !== Auth::id() && $transaction->buyer_id !== Auth::id(), 403);
-
         if ($transaction->type === 'trade') {
-            abort_if(!in_array($transaction->status, ['accepted']), 422);
+            abort_if($transaction->seller_id !== Auth::id() && $transaction->buyer_id !== Auth::id(), 403);
+            abort_if($transaction->status !== 'accepted', 422);
+
+            if ($transaction->seller_id === Auth::id()) {
+                $transaction->update([
+                    'seller_shipped' => true,
+                    'tracking_number' => $request->tracking_number,
+                ]);
+            } else {
+                $transaction->update([
+                    'buyer_shipped' => true,
+                    'return_tracking_number' => $request->tracking_number,
+                ]);
+            }
+
+            // Se entrambi hanno spedito passa a in_validation
+            $transaction->refresh();
+            if ($transaction->seller_shipped && $transaction->buyer_shipped) {
+                $transaction->update(['status' => 'in_validation']);
+            }
         } else {
-            abort_if($transaction->status !== 'paid_escrow', 422);
             abort_if($transaction->seller_id !== Auth::id(), 403);
+            abort_if($transaction->status !== 'paid_escrow', 422);
+
+            $transaction->update([
+                'status' => 'in_validation',
+                'tracking_number' => $request->tracking_number,
+                'seller_shipped' => true,
+            ]);
         }
 
-        $transaction->update([
-            'status' => 'in_validation',
-            'tracking_number' => $request->tracking_number,
-            'seller_shipped' => true,
-        ]);
-
-        return redirect()->back()->with('success', 'Spedizione confermata! La carta è ora in attesa di validazione.');
+        return redirect()->back()->with('success', 'Spedizione confermata!');
     }
 
     public function markCompleted(Transaction $transaction)

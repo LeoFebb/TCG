@@ -48,7 +48,7 @@ class Transaction extends Model
 
     public function canBeValidated(): bool
     {
-        return $this->status === 'in_validation';
+        return $this->status === 'in_validation' || ($this->status === 'accepted' && $this->type === 'trade');
     }
 
     public function isValidated(): bool

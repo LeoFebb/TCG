@@ -91,9 +91,10 @@
                 <div class="rounded-xl border border-purple-900/50 p-8" style="background: rgba(45,17,84,0.3);">
                     <p class="text-purple-400 text-xs font-mono uppercase tracking-widest mb-6">Modifica profilo</p>
 
-                    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data"
+                    <form method="POST" action="{{ route('user.profile.update') }}" enctype="multipart/form-data"
                         class="space-y-5">
                         @csrf
+                        
 
                         {{-- Foto profilo --}}
                         <div>

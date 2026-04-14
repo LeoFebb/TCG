@@ -160,10 +160,11 @@
                                     @csrf
                                     <input type="hidden" name="validator_notes" value="">
                                     <button type="submit"
-                                        class="btn-gold px-6 py-2 text-sm rounded-sm flex items-center gap-2">
+                                        class="px-6 py-2 text-sm rounded-sm flex items-center gap-2 font-bold text-white"
+                                        style="background: rgba(5,150,105,0.2); border: 1px solid rgba(16,185,129,0.5);"
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M5 13l4 4L19 7" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
                                         </svg>
                                         Approva
                                     </button>
@@ -179,7 +180,27 @@
                                     Rifiuta
                                 </button>
                             @endif
-
+                            @if (in_array($transaction->status, ['validated', 'shipping', 'accepted', 'in_validation']))
+                                <a href="{{ route('shipping.return-label', $transaction) }}" target="_blank"
+                                    class="px-6 py-2 border border-purple-700 text-purple-400 hover:bg-purple-900/30 text-sm transition-all flex items-center gap-2">
+                                    &#128424; Stampa etichetta
+                                </a>
+                                @if ($transaction->status === 'validated')
+                                    <form method="POST" action="{{ route('validator.mark-shipped', $transaction) }}"
+                                        class="flex gap-2">
+                                        @csrf
+                                        <input type="text" name="return_tracking_number"
+                                            placeholder="Tracking (opzionale)"
+                                            class="px-3 py-2 rounded-sm text-white text-xs border"
+                                            style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3); width: 150px;">
+                                        <button type="submit"
+                                            class="px-4 py-2 text-xs font-bold text-white flex items-center gap-2"
+                                            style="background: rgba(5,150,105,0.2); border: 1px solid rgba(16,185,129,0.5);">
+                                            &#9989; Ho spedito
+                                        </button>
+                                    </form>
+                                @endif
+                            @endif
                             {{-- Pulsante etichetta rispedizione (solo dopo validazione) --}}
                             @if (in_array($transaction->status, ['validated', 'shipping']))
                                 <a href="{{ route('shipping.return-label', $transaction) }}" target="_blank"

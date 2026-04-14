@@ -51,8 +51,9 @@ Route::get('/dashboard', function () {
 
 // Profile (richiesto da Breeze)
 Route::middleware('auth')->group(function () {
+    // Profile (richiesto da Breeze)
     Route::get('/profile', fn() => redirect('/'))->name('profile.edit');
-    Route::patch('/profile', fn() => redirect('/'))->name('profile.update');
+    Route::patch('/profile', fn() => redirect('/'))->name('breeze.profile.update');
     Route::delete('/profile', fn() => redirect('/'))->name('profile.destroy');
 });
 
@@ -93,7 +94,7 @@ Route::middleware('auth')->group(function () {
 // Profilo utente
 Route::middleware('auth')->group(function () {
     Route::get('/profilo', [UserProfileController::class, 'show'])->name('profile.show');
-    Route::post('/profilo', [UserProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profilo', [UserProfileController::class, 'update'])->name('user.profile.update');
 });
 
 // Transazioni e spedizioni

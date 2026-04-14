@@ -35,13 +35,17 @@ class ValidatorController extends Controller
         // Carica le transazioni assegnate a questo validatore
         // con eager loading per evitare N+1 query
         $pendingTasks = Transaction::with(['card', 'buyer', 'seller', 'offeredCard'])
-            ->where('validator_id', Auth::id())
-            ->whereIn('status', ['in_validation', 'paid_escrow'])
+            ->where(function ($q) {
+                $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
+            })
+            ->whereIn('status', ['in_validation', 'paid_escrow', 'accepted'])
             ->latest()
             ->paginate(15);
 
         $completedTasks = Transaction::with(['card', 'buyer', 'seller'])
-            ->where('validator_id', Auth::id())
+            ->where(function ($q) {
+                $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
+            })
             ->whereIn('status', ['validated', 'shipping', 'completed'])
             ->latest()
             ->take(10)
