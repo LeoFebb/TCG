@@ -23,6 +23,14 @@ class EscrowController extends Controller
      */
     public function checkout(Request $request, Card $card)
     {
+        // Controlla se c'è una transazione scaduta per questa carta
+        $expiredTransaction = Transaction::where('card_id', $card->id)->where('status', 'pending_payment')->where('checkout_expires_at', '<', now())->first();
+
+        if ($expiredTransaction) {
+            $expiredTransaction->delete();
+            $card->update(['status' => 'available']);
+        }
+
         abort_if($card->status !== 'available', 422, 'Questa carta non è più disponibile.');
         abort_if($card->user_id === Auth::id(), 403, 'Non puoi acquistare la tua stessa carta.');
         abort_if($card->price === null, 422, 'Questa carta non è in vendita diretta.');
@@ -40,30 +48,30 @@ class EscrowController extends Controller
             'buyer_id' => Auth::id(),
             'seller_id' => $card->user_id,
             'card_id' => $card->id,
-            'validator_id' => null, // Verrà scelto dall'acquirente
+            'validator_id' => null,
             'type' => 'sale',
-            'status' => 'paid_escrow',
+            'status' => 'pending_payment',
             'amount' => $card->price,
             'platform_fee' => $this->escrowService->calculatePlatformFee($card->price),
             'shipping_cost' => self::SHIPPING_COST / 100,
             'shipping_country' => 'Italia',
+            'checkout_expires_at' => now()->addMinutes(5),
         ]);
 
         // Blocca la carta subito
         $card->update(['status' => 'in_negotiation']);
 
         $clientSecret = null;
-$stripePublicKey = config('services.stripe.key');
-try {
-    $totalAmount = (int) ($card->price * 100) + self::SHIPPING_COST;
-    $paymentIntent = $this->escrowService->createPaymentIntent(amount: $totalAmount, sellerId: $card->user_id, cardId: $card->id);
-    $clientSecret = $paymentIntent->client_secret;
-    $transaction->update(['stripe_intent_id' => $paymentIntent->id]);
-} catch (\Exception $e) {
-    } catch (\Exception $e) {
-    Log::error('Stripe checkout error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
-
-}
+        $stripePublicKey = config('services.stripe.key');
+        try {
+            $totalAmount = (int) ($card->price * 100) + self::SHIPPING_COST;
+            $paymentIntent = $this->escrowService->createPaymentIntent(amount: $totalAmount, sellerId: $card->user_id, cardId: $card->id);
+            $clientSecret = $paymentIntent->client_secret;
+            $transaction->update(['stripe_intent_id' => $paymentIntent->id]);
+        } catch (\Exception $e) {
+        } catch (\Exception $e) {
+            Log::error('Stripe checkout error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
+        }
 
         return view('marketplace.checkout', [
             'card' => $card,

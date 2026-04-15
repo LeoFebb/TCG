@@ -5,11 +5,21 @@
 @section('content')
 
     <div class="py-10 px-6 border-b border-purple-900/30" style="background: rgba(45, 17, 84, 0.2);">
-        <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
             <p class="text-purple-400 text-xs font-mono uppercase tracking-widest mb-1">Checkout</p>
             <h1 class="text-3xl font-black text-white">Acquisto sicuro</h1>
         </div>
+        <div class="rounded-xl px-5 py-3 border border-yellow-800/50 flex items-center gap-3"
+             style="background: rgba(234,179,8,0.1);">
+            <span class="text-yellow-400 text-lg">&#9203;</span>
+            <div>
+                <p class="text-yellow-400 text-xs font-mono uppercase tracking-widest">Tempo rimasto</p>
+                <p class="text-white font-black text-xl" id="checkout-timer">05:00</p>
+            </div>
+        </div>
     </div>
+</div>
 
     <div class="max-w-5xl mx-auto px-3 md:px-6 py-6 md:py-10">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -279,7 +289,29 @@
     </div>
     </div>
 @endsection
-
+@push('head')
+<script>
+// Timer countdown 5 minuti
+document.addEventListener('DOMContentLoaded', function() {
+    let timeLeft = 300;
+    const timerEl = document.getElementById('checkout-timer');
+    if (!timerEl) return;
+    const interval = setInterval(function() {
+        timeLeft--;
+        const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const sec = (timeLeft % 60).toString().padStart(2, '0');
+        timerEl.textContent = min + ':' + sec;
+        if (timeLeft <= 60) {
+            timerEl.style.color = '#f87171';
+        }
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            window.location.href = '{{ route('marketplace.index') }}';
+        }
+    }, 1000);
+});
+</script>
+@endpush
 @push('head')
 <script src="https://js.stripe.com/v3/"></script>
 @endpush
