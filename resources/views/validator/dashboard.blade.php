@@ -98,7 +98,7 @@
                                     @endif
 
                                     {{-- Parti coinvolte --}}
-                                    <div class="flex items-center gap-6 mt-3 text-sm">
+                                    <div class="flex flex-wrap items-center gap-3 md:gap-6 mt-3 text-sm">
                                         <div>
                                             <span class="text-vault-muted font-mono text-xs">VENDITORE </span>
                                             <span class="text-vault-text">{{ $transaction->seller->name }}</span>
@@ -112,7 +112,7 @@
 
                                     {{-- Stato ricezione (solo permute) --}}
                                     @if ($transaction->type === 'trade')
-                                        <div class="flex items-center gap-4 mt-3">
+                                        <div class="flex flex-wrap items-center gap-3 mt-3">
                                             <div class="flex items-center gap-1.5">
                                                 <span
                                                     class="w-2 h-2 rounded-full {{ $transaction->seller_shipped ? 'bg-emerald-400' : 'bg-vault-border' }}"></span>
@@ -131,7 +131,7 @@
 
                             {{-- Importo (solo vendite) --}}
                             @if ($transaction->type === 'sale')
-                                <div class="text-right">
+                                <div class="text-left md:text-right mt-3 md:mt-0">
                                     <p class="font-mono text-xs text-vault-muted uppercase mb-1">Importo in escrow</p>
                                     <p class="font-display text-3xl text-vault-gold">
                                         €{{ number_format($transaction->amount, 2, ',', '.') }}
@@ -144,7 +144,7 @@
                         </div>
 
                         {{-- Azioni --}}
-                        <div class="flex items-center gap-3 mt-6 pt-5 border-t border-vault-border">
+                        <div class="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-vault-border">
 
 
                             {{-- Dettagli --}}
