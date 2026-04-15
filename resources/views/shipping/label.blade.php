@@ -4,27 +4,28 @@
     <meta charset="UTF-8">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; font-size: 12px; padding: 10px; }
-        .label { border: 3px solid #000; padding: 12px; height: 100%; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; }
-        .logo { font-size: 22px; font-weight: bold; letter-spacing: 2px; }
-        .tipo-badge { display: inline-block; background: #7c3aed; color: white; padding: 4px 14px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 6px; }
-        .section { margin: 8px 0; }
-        .section-title { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 1px; margin-bottom: 3px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px; }
-        .section-content { font-size: 12px; line-height: 1.6; }
-        .nome { font-size: 14px; font-weight: bold; }
-        .ruolo-badge { display: inline-block; background: #f3f4f6; border: 1px solid #ddd; padding: 2px 8px; border-radius: 3px; font-size: 10px; color: #555; margin-bottom: 3px; }
-        .arrow { text-align: center; font-size: 28px; margin: 6px 0; color: #7c3aed; }
-        .barcode-area { text-align: center; border: 2px dashed #7c3aed; padding: 8px; margin: 8px 0; background: #f9f7ff; border-radius: 4px; }
-        .tracking { font-size: 18px; font-weight: bold; letter-spacing: 4px; font-family: monospace; color: #7c3aed; }
-        .card-info { background: #f9f7ff; border: 1px solid #e9d5ff; padding: 8px; margin: 8px 0; border-radius: 4px; }
-        .card-name { font-size: 14px; font-weight: bold; }
-        .card-detail { font-size: 10px; color: #666; margin-top: 2px; }
-        .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 6px 8px; margin: 8px 0; font-size: 10px; border-radius: 4px; }
-        .certified { background: #d1fae5; border: 1px solid #10b981; padding: 6px 8px; margin: 8px 0; font-size: 10px; border-radius: 4px; color: #065f46; font-weight: bold; }
-        .istruzioni { background: #f3f4f6; border: 1px solid #e5e7eb; padding: 6px 8px; margin: 6px 0; font-size: 10px; border-radius: 4px; color: #374151; }
-        .footer { text-align: center; font-size: 9px; color: #888; border-top: 1px solid #ddd; padding-top: 6px; margin-top: 8px; }
-        .divider { border-top: 1px dashed #ccc; margin: 8px 0; }
+        @page { margin: 0; size: A6 landscape; }
+        html, body { width: 148mm; height: 105mm; overflow: hidden; font-family: Arial, sans-serif; font-size: 8px; background: white; }
+        .label { padding: 4px 6px; width: 148mm; height: 105mm; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
+        .logo { font-size: 13px; font-weight: bold; letter-spacing: 1px; }
+        .tipo-badge { background: #7c3aed; color: white; padding: 1px 6px; font-size: 8px; font-weight: bold; }
+        .tracking-code { font-family: monospace; font-size: 10px; font-weight: bold; letter-spacing: 2px; color: #7c3aed; }
+        .addresses { display: flex; gap: 5px; margin: 3px 0; }
+        .address-box { flex: 1; border: 1px solid #ccc; padding: 3px; }
+        .address-box.highlight { border: 2px solid #000; background: #f9f7ff; }
+        .address-label { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 2px; font-weight: bold; }
+        .address-name { font-size: 10px; font-weight: bold; margin-bottom: 1px; }
+        .address-role { display: inline-block; background: #f3f4f6; border: 1px solid #ddd; padding: 1px 4px; font-size: 7px; color: #555; margin-bottom: 2px; }
+        .address-detail { font-size: 8px; line-height: 1.3; color: #333; }
+        .arrow { display: flex; align-items: center; justify-content: center; font-size: 16px; color: #7c3aed; padding: 0 2px; }
+        .card-info { background: #f9f7ff; border: 1px solid #e9d5ff; padding: 3px; margin: 2px 0; display: flex; justify-content: space-between; align-items: center; }
+        .card-name { font-size: 10px; font-weight: bold; }
+        .card-detail { font-size: 8px; color: #666; margin-top: 1px; }
+        .badge { background: #d1fae5; border: 1px solid #10b981; padding: 1px 5px; font-size: 8px; color: #065f46; font-weight: bold; text-align: center; }
+        .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 2px 5px; font-size: 8px; }
+        .instructions { background: #f3f4f6; border: 1px solid #e5e7eb; padding: 2px 5px; font-size: 8px; color: #374151; }
+        .footer { text-align: center; font-size: 7px; color: #888; border-top: 1px solid #ddd; padding-top: 2px; }
     </style>
 </head>
 <body>
@@ -32,94 +33,74 @@
 
     {{-- Header --}}
     <div class="header">
-        <div class="logo">🛡 TCG VAULT</div>
-        <div style="font-size: 10px; color: #555; margin-top: 2px;">Marketplace TCG Certificato</div>
-        <div class="tipo-badge">{{ $tipo }}</div>
-    </div>
-
-    {{-- Tracking --}}
-    <div class="barcode-area">
-        <div style="font-size: 9px; color: #888; margin-bottom: 4px;">CODICE SPEDIZIONE</div>
-        <div class="tracking">{{ $tracking_code }}</div>
-        <div style="font-size: 9px; color: #888; margin-top: 2px;">
-            Transazione #{{ $transaction->id }} — Generata il {{ $generated_at }}
+        <div>
+            <div class="logo">&#127183; TCG VAULT</div>
+            <div style="font-size: 8px; color: #555;">Marketplace TCG Certificato</div>
+        </div>
+        <div style="text-align: center;">
+            <div class="tipo-badge">{{ $tipo }}</div>
+            <div class="tracking-code" style="margin-top: 3px;">{{ $tracking_code }}</div>
+        </div>
+        <div style="text-align: center; font-size: 8px; color: #888;">
+            Transazione #{{ $transaction->id }}<br>
+            {{ $generated_at }}
         </div>
     </div>
 
-    {{-- Mittente --}}
-    <div class="section">
-        <div class="section-title">📤 Mittente</div>
-        <div class="section-content">
-            <div class="ruolo-badge">{{ $mittente['ruolo'] }}</div>
-            <div class="nome">{{ $mittente['nome'] }}</div>
-            @if(isset($mittente['address']))
-                <div style="font-size: 11px; color: #555;">{{ $mittente['address'] }}</div>
+    {{-- Indirizzi --}}
+    <div class="addresses">
+        <div class="address-box">
+            <div class="address-label">&#128228; Mittente</div>
+            <div class="address-role">{{ $mittente['ruolo'] }}</div>
+            <div class="address-name">{{ $mittente['nome'] }}</div>
+            @if(isset($mittente['address']) && $mittente['address'])
+                <div class="address-detail">{{ $mittente['address'] }}</div>
             @endif
-            @if(isset($mittente['phone']))
-                <div style="font-size: 11px; color: #555;">Tel: {{ $mittente['phone'] }}</div>
+            @if(isset($mittente['phone']) && $mittente['phone'])
+                <div class="address-detail">Tel: {{ $mittente['phone'] }}</div>
             @endif
         </div>
-    </div>
-
-    <div class="arrow">⬇</div>
-
-    {{-- Destinatario --}}
-    <div class="section">
-        <div class="section-title">📥 Destinatario</div>
-        <div class="section-content">
-            <div class="nome">{{ $destinatario['name'] }}</div>
-            @if(isset($destinatario['address']))
-                <div>{{ $destinatario['address'] }}</div>
+        <div class="arrow">&#10132;</div>
+        <div class="address-box highlight">
+            <div class="address-label">&#128229; Destinatario</div>
+            <div class="address-name">{{ $destinatario['name'] }}</div>
+            @if(isset($destinatario['address']) && $destinatario['address'])
+                <div class="address-detail">{{ $destinatario['address'] }}</div>
             @endif
-            @if(isset($destinatario['zip']) && isset($destinatario['city']))
-                <div>{{ $destinatario['zip'] }} {{ $destinatario['city'] }}</div>
+            @if(isset($destinatario['zip']) && isset($destinatario['city']) && $destinatario['city'])
+                <div class="address-detail">{{ $destinatario['zip'] }} {{ $destinatario['city'] }}</div>
             @endif
-            @if(isset($destinatario['country']))
-                <div>{{ $destinatario['country'] }}</div>
+            @if(isset($destinatario['country']) && $destinatario['country'])
+                <div class="address-detail">{{ $destinatario['country'] }}</div>
             @endif
             @if(isset($destinatario['phone']) && $destinatario['phone'])
-                <div>Tel: {{ $destinatario['phone'] }}</div>
+                <div class="address-detail">Tel: {{ $destinatario['phone'] }}</div>
             @endif
         </div>
     </div>
-
-    <div class="divider"></div>
 
     {{-- Info carta --}}
     <div class="card-info">
-        <div style="font-size: 9px; color: #888; margin-bottom: 4px;">🃏 CONTENUTO</div>
-        <div class="card-name">{{ $transaction->card->name }}</div>
-        <div class="card-detail">
-            {{ $transaction->card->set_name }} · #{{ $transaction->card->card_number }}<br>
-            Condizione: {{ $transaction->card->condition }} · {{ strtoupper($transaction->card->tcg_category) }}
+        <div>
+            <div style="font-size: 7px; color: #888; margin-bottom: 2px;">&#127183; CONTENUTO</div>
+            <div class="card-name">{{ $transaction->card->name }}</div>
+            <div class="card-detail">{{ $transaction->card->set_name }} · #{{ $transaction->card->card_number }} · {{ $transaction->card->condition }} · {{ strtoupper($transaction->card->tcg_category) }}</div>
+        </div>
+        <div style="text-align: center;">
+            @if(isset($is_return) && $is_return)
+                <div class="badge">&#9989; CERTIFICATA TCG VAULT</div>
+            @endif
+            <div style="font-size: 7px; color: #888; margin-top: 2px;">Rarita: {{ $transaction->card->rarity }}</div>
         </div>
     </div>
 
-    {{-- Badge certificazione se è rispedizione --}}
-    @if(isset($is_return) && $is_return)
-        <div class="certified">
-            ✅ CARTA CERTIFICATA AUTENTICA — TCG Vault
-        </div>
-    @endif
-
-    {{-- Warning --}}
-    <div class="warning">
-        ⚠️ <strong>FRAGILE</strong> — Inserire in toploader. Non piegare. Proteggere dall'umidità.
-    </div>
-
-    {{-- Istruzioni --}}
-    <div class="istruzioni">
-        📋 {{ $istruzioni }}
-    </div>
+    {{-- Warning e istruzioni --}}
+    <div class="warning">&#9888; <strong>FRAGILE</strong> — Inserire in toploader. Non piegare.</div>
+    <div class="instructions">{{ $istruzioni }}</div>
 
     {{-- Footer --}}
-    <div class="footer">
-        TCG Vault © {{ date('Y') }} — support@tcgvault.it<br>
-        Questa etichetta è valida solo per la transazione #{{ $transaction->id }}
-    </div>
+    <div class="footer">TCG Vault &copy; {{ date('Y') }} — support@tcgvault.it — Transazione #{{ $transaction->id }}</div>
+
 </div>
 </body>
 </html>
-
-
-

@@ -11,7 +11,7 @@
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto px-6 py-8">
+    <div class="max-w-4xl mx-auto px-3 md:px-6 py-4 md:py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
             {{-- Colonna sinistra: Avatar e statistiche --}}

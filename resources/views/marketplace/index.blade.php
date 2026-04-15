@@ -37,11 +37,11 @@
 
         {{-- FILTRI --}}
         <div class="rounded-xl p-5 border border-purple-900/50 mb-8" style="background: rgba(45, 17, 84, 0.2);">
-            <form method="GET" action="{{ route('marketplace.index') }}" class="flex flex-wrap gap-3 items-end">
+            <form method="GET" action="{{ route('marketplace.index') }}" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 items-end">
 
                 <div>
                     <label class="block text-gray-500 text-xs mb-1 uppercase tracking-wide">Categoria</label>
-                    <select name="category"
+                    <select name="category" class="w-full border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none" style="background: rgba(0,0,0,0.4);">
                         class="bg-black/40 border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-purple-500">
                         <option value="">Tutte</option>
                         <option value="pokemon" {{ request('category') == 'pokemon' ? 'selected' : '' }}>🔴 Pokémon
@@ -60,7 +60,7 @@
 
                 <div>
                     <label class="block text-gray-500 text-xs mb-1 uppercase tracking-wide">Tipo</label>
-                    <select name="type" class="border text-white text-sm focus:outline-none px-3 py-2.5 rounded-lg"
+                    <select name="type"  class="w-full border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none" style="background: rgba(0,0,0,0.4);">
                         style="background: rgba(45,17,84,0.95); border-color: rgba(124,58,237,0.5); color: #e8e6e0;">
                         <option value="">Tutte le carte</option>
                         <option value="sale" {{ request('type') == 'sale' ? 'selected' : '' }}>&#128176; In vendita
@@ -71,7 +71,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-500 text-xs mb-1 uppercase tracking-wide">Condizione</label>
-                    <select name="condition"
+                    <select name="condition"  class="w-full border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none" style="background: rgba(0,0,0,0.4);">
                         class="bg-black/40 border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-purple-500">
                         <option value="">Tutte</option>
                         <option value="NM" {{ request('condition') == 'NM' ? 'selected' : '' }}>NM - Near Mint
@@ -95,7 +95,7 @@
 
                 <div>
                     <label class="block text-gray-500 text-xs mb-1 uppercase tracking-wide">Ordina per</label>
-                    <select name="sort"
+                    <select name="sort"  class="w-full border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none" style="background: rgba(0,0,0,0.4);">
                         class="bg-black/40 border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-purple-500">
                         <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Più recenti</option>
                         <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Prezzo crescente

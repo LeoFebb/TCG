@@ -61,7 +61,7 @@ class ShippingController extends Controller
 
         $transaction->update(['label_generated_at' => now()]);
 
-        $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 283, 425], 'portrait');
+        $pdf = Pdf::loadView('shipping.label', $data)->setPaper('a6', 'landscape');
 
         return $pdf->download("etichetta-venditore-{$transaction->id}.pdf");
     }
@@ -129,7 +129,7 @@ class ShippingController extends Controller
         'is_return'     => true,
     ];
 
-    $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 283, 425], 'portrait');
+    $pdf = Pdf::loadView('shipping.label', $data)->setPaper('a6', 'landscape');
 
     return $pdf->download("etichetta-rispedizione-{$transaction->id}.pdf");
 }
@@ -169,7 +169,7 @@ class ShippingController extends Controller
             'tracking_code' => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-BV',
         ];
 
-        $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 283, 425], 'portrait');
+        $pdf = Pdf::loadView('shipping.label', $data)->setPaper('a6', 'landscape');
 
         return $pdf->download("etichetta-acquirente-{$transaction->id}.pdf");
     }
@@ -209,7 +209,7 @@ class ShippingController extends Controller
             'tracking_code' => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-SV',
         ];
 
-        $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 283, 425], 'portrait');
+        $pdf = Pdf::loadView('shipping.label', $data)->setPaper('a6', 'landscape');
 
         return $pdf->download("etichetta-venditore-{$transaction->id}.pdf");
     }

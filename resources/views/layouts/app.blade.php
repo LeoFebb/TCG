@@ -67,7 +67,18 @@
                         </button>
                     </div>
                 </form>
-
+                {{-- Hamburger mobile --}}
+                <button id="mobile-menu-btn" class="md:hidden text-gray-400 hover:text-white p-2">
+                    <svg id="hamburger-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
                 <div class="flex items-center gap-3">
                     @guest
                         <a href="{{ route('login') }}"
@@ -103,6 +114,7 @@
                                     </span>
                                 @endif
                             </a>
+
                             <a href="{{ route('user.dashboard') }}"
                                 class="px-4 py-2 rounded-lg text-xs text-gray-400 border border-purple-800/50 hover:text-white transition hidden md:block">
                                 Dashboard
@@ -131,7 +143,7 @@
                 </div>
             </div>
 
-            <nav class="flex items-center justify-center gap-1 pb-2 overflow-x-auto"
+            <nav class="flex items-center justify-center gap-1 pb-2 overflow-x-auto md:flex hidden"
                 style="-ms-overflow-style: none; scrollbar-width: none;">
                 <a href="{{ route('home') }}"
                     class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
@@ -164,11 +176,24 @@
                 </a>
             </nav>
             @if (auth()->check() && auth()->user()->role === 'validator')
-                <nav class="flex items-center justify-center gap-1 pb-3 overflow-x-auto"
+                <nav class="flex items-center justify-center gap-1 pb-2 overflow-x-auto md:flex hidden"
                     style="-ms-overflow-style: none; scrollbar-width: none;">
+                    @php
+                        $pendingValidations = \App\Models\Transaction::where(function ($q) {
+                            $q->where('validator_id', auth()->id())->orWhere('buyer_validator_id', auth()->id());
+                        })
+                            ->whereIn('status', ['in_validation', 'accepted'])
+                            ->count();
+                    @endphp
                     <a href="{{ route('validator.dashboard') }}"
-                        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+                        class="relative flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
                         &#9889; Dashboard Validatore
+                        @if ($pendingValidations > 0)
+                            <span class="w-4 h-4 rounded-full text-white flex items-center justify-center font-bold"
+                                style="background: #a855f7; font-size: 9px;">
+                                {{ $pendingValidations }}
+                            </span>
+                        @endif
                     </a>
                     <a href="{{ route('validator.profile.edit') }}"
                         class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
@@ -176,7 +201,7 @@
                     </a>
                 </nav>
             @else
-                <nav class="flex items-center justify-center gap-1 pb-3 overflow-x-auto"
+                <nav class="flex items-center justify-center gap-1 pb-2 overflow-x-auto md:flex hidden"
                     style="-ms-overflow-style: none; scrollbar-width: none;">
                     <a href="{{ route('marketplace.index') }}"
                         class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
@@ -196,6 +221,58 @@
                     </a>
                 </nav>
             @endif
+        </div>
+        {{-- Menu mobile --}}
+        <div id="mobile-menu" class="hidden md:hidden border-t border-purple-900/50 px-6 py-4">
+            {{-- Ricerca mobile --}}
+            <form method="GET" action="{{ route('marketplace.search') }}" class="mb-4">
+                <div class="relative w-full">
+                    <input type="text" name="q" value="{{ request('q') }}" placeholder="Cerca carte..."
+                        class="w-full bg-black/40 border border-purple-800/50 text-gray-300 px-4 py-2 rounded-lg text-sm focus:outline-none">
+                </div>
+            </form>
+            {{-- Links --}}
+            <div class="flex flex-col gap-3">
+                <a href="{{ route('marketplace.index') }}"
+                    class="text-gray-400 hover:text-white text-sm py-2 border-b border-purple-900/30">&#127183;
+                    Marketplace</a>
+                <a href="{{ route('validators.list') }}"
+                    class="text-gray-400 hover:text-white text-sm py-2 border-b border-purple-900/30">&#128737;
+                    Validatori</a>
+                @auth
+                    @if (auth()->user()->role !== 'validator')
+                        <a href="{{ route('validator.register') }}"
+                            class="text-purple-400 hover:text-white text-sm py-2 border-b border-purple-900/30">&#128737;
+                            Diventa Validatore</a>
+                        <a href="{{ route('cards.create') }}"
+                            class="text-gray-400 hover:text-white text-sm py-2 border-b border-purple-900/30">+
+                            Pubblica carta</a>
+                        <a href="{{ route('transactions.index') }}"
+                            class="text-gray-400 hover:text-white text-sm py-2 border-b border-purple-900/30">&#128230;
+                            Transazioni</a>
+                        <a href="{{ route('profile.show') }}"
+                            class="text-gray-400 hover:text-white text-sm py-2 border-b border-purple-900/30">&#128100;
+                            Profilo</a>
+                    @else
+                        <a href="{{ route('validator.dashboard') }}"
+                            class="text-gray-400 hover:text-white text-sm py-2 border-b border-purple-900/30">&#9889;
+                            Dashboard</a>
+                        <a href="{{ route('validator.profile.edit') }}"
+                            class="text-gray-400 hover:text-white text-sm py-2 border-b border-purple-900/30">&#128100;
+                            Profilo</a>
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="text-red-400 hover:text-red-300 text-sm py-2 w-full text-left">&#128275;
+                            Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}"
+                        class="text-gray-400 hover:text-white text-sm py-2 border-b border-purple-900/30">Accedi</a>
+                    <a href="{{ route('register') }}" class="text-white text-sm py-2">Registrati</a>
+                @endauth
+            </div>
         </div>
     </header>
 
@@ -274,6 +351,16 @@
     @endpush
 
     @stack('scripts')
+    <script>
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            const hamburger = document.getElementById('hamburger-icon');
+            const close = document.getElementById('close-icon');
+            menu.classList.toggle('hidden');
+            hamburger.classList.toggle('hidden');
+            close.classList.toggle('hidden');
+        });
+    </script>
 </body>
 
 </html>

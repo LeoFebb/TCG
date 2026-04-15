@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<div class="max-w-3xl mx-auto px-6 py-10">
+<div class="max-w-3xl mx-auto px-3 md:px-6 py-6 md:py-10">
 
     <form method="POST" action="{{ route('validator.profile.update') }}"
           enctype="multipart/form-data" class="space-y-6">
@@ -23,7 +23,7 @@
              style="background: rgba(45,17,84,0.3);">
             <p class="text-purple-400 text-xs font-mono uppercase tracking-widest mb-4">📸 Foto profilo</p>
 
-            <div class="flex items-center gap-6">
+            <div class="flex flex-col sm:flex-row items-center gap-4 md:gap-6">
                 {{-- Avatar attuale --}}
                 <div id="avatar-preview"
                      class="w-24 h-24 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2 border-purple-700"

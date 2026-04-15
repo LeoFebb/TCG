@@ -3,7 +3,7 @@
 @section('title', 'Vendi una carta — TCG Vault')
 
 @section('content')
-<div class="max-w-2xl mx-auto">
+<div class="max-w-2xl mx-auto px-3 md:px-6">
     <h1 class="text-3xl font-bold text-yellow-400 mb-2">Vendi una carta</h1>
     <p class="text-gray-400 mb-8">Compila il form per pubblicare la tua carta nel marketplace.</p>
 
@@ -27,7 +27,7 @@
                    class="w-full bg-gray-900 border border-gray-700 text-white px-4 py-3 rounded focus:outline-none focus:border-yellow-400">
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-gray-400 text-sm mb-1">Set *</label>
                 <input type="text" name="set_name" value="{{ old('set_name') }}" required
@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-gray-400 text-sm mb-1">Categoria TCG *</label>
                 <select name="tcg_category" required
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-gray-400 text-sm mb-1">Condizione *</label>
                 <select name="condition" required

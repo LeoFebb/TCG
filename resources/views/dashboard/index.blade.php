@@ -16,7 +16,7 @@
     </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-6 py-8">
+<div class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
 
     {{-- Statistiche --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">

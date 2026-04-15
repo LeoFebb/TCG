@@ -11,16 +11,16 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
 
         {{-- VENDITE --}}
-        <div class="rounded-2xl border border-purple-900/50 p-8 mb-8" style="background: rgba(45,17,84,0.2);">
+        <div class="rounded-2xl border border-purple-900/50 p-4 md:p-8 mb-8" style="background: rgba(45,17,84,0.2);">
             <h2 class="text-xl font-black text-white mb-6 flex items-center gap-2">
                 &#128230; Carte che ho venduto
             </h2>
 
             @forelse($selling as $t)
-                <div class="rounded-xl border border-purple-900/50 p-6 mb-4" style="background: rgba(45,17,84,0.3);">
+                <div class="rounded-xl border border-purple-900/50 p-4 mb-4" style="background: rgba(45,17,84,0.3);">
                     <div class="flex flex-col md:flex-row justify-between gap-4">
                         <div>
                             <p class="text-purple-400 text-xs font-mono uppercase mb-1">Transazione #{{ $t->id }}</p>
@@ -175,7 +175,7 @@
             </h2>
 
             @forelse($buying as $t)
-                <div class="rounded-xl border border-purple-900/50 p-6 mb-4" style="background: rgba(45,17,84,0.3);">
+                <div class="rounded-xl border border-purple-900/50 p-4 mb-4" style="background: rgba(45,17,84,0.3);">
                     <div class="flex flex-col md:flex-row justify-between gap-4">
                         <div>
                             <p class="text-purple-400 text-xs font-mono uppercase mb-1">Transazione #{{ $t->id }}

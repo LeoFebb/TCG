@@ -75,11 +75,8 @@ class ValidatorController extends Controller
      */
     public function show(Transaction $transaction)
     {
-        // Il validatore può vedere solo le transazioni assegnate a lui
-        abort_if($transaction->validator_id !== Auth::id(), 403);
-
+        abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403);
         $transaction->load(['card', 'buyer', 'seller', 'offeredCard.owner']);
-
         return view('validator.transaction-detail', compact('transaction'));
     }
 
@@ -223,5 +220,14 @@ class ValidatorController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Spedizione confermata!');
+    }
+
+    public function markReceived(Transaction $transaction)
+    {
+        abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403);
+
+        $transaction->update(['validator_received' => true]);
+
+        return redirect()->back()->with('success', 'Carta ricevuta confermata!');
     }
 }

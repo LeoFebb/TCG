@@ -51,7 +51,7 @@
     </div>
 
     {{-- STATISTICHE --}}
-    <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-3 md:px-6 py-8 md:py-12">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="rounded-xl p-6 text-center border border-purple-900/50" style="background: rgba(45, 17, 84, 0.3);">
                 <div class="text-3xl mb-2">&#128293;</div>
@@ -77,9 +77,9 @@
     </div>
 
     {{-- CATEGORIE --}}
-    <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-3 md:px-6 py-8 md:py-12">
         <h2 class="text-2xl font-black text-white mb-6 text-center">Sfoglia per categoria</h2>
-        <div class="grid grid-cols-3 gap-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
 
             <a href="{{ route('marketplace.category', 'pokemon') }}"
                 class="rounded-xl overflow-hidden border border-purple-900/50 hover:border-purple-500 transition group relative h-48"
@@ -142,7 +142,7 @@
     </div>
 
     {{-- COME FUNZIONA --}}
-    <div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="max-w-7xl mx-auto px-3 md:px-6 py-8 md:py-12">
         <div class="rounded-2xl p-10 border border-purple-900/50" style="background: rgba(45, 17, 84, 0.2);">
             <h2 class="text-2xl font-black text-white text-center mb-10">Come funziona TCG Vault</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">

@@ -5,7 +5,7 @@
 @section('content')
 
     <div class="py-10 px-6 border-b border-purple-900/30" style="background: rgba(45, 17, 84, 0.2);">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
                 <p class="text-purple-400 text-xs font-mono uppercase tracking-widest mb-1">Account</p>
                 <h1 class="text-3xl font-black text-white">Le mie carte</h1>
@@ -17,10 +17,10 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
 
         @forelse($cards as $card)
-            <div class="rounded-xl border border-purple-900/50 p-5 mb-4 flex items-center gap-5"
+            <div class="rounded-xl border border-purple-900/50 p-4 mb-4 flex items-center gap-3 md:gap-5"
                 style="background: rgba(45,17,84,0.2);">
 
                 {{-- Immagine --}}

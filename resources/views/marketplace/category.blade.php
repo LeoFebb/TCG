@@ -32,9 +32,9 @@
     </div>
 
     {{-- FILTRI --}}
-    <div class="max-w-7xl mx-auto px-6 py-6">
+    <div class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-6">
         <form method="GET" action="{{ route('marketplace.category', $category) }}"
-            class="flex gap-2 flex-wrap items-center">
+            class="grid grid-cols-2 md:flex gap-2 flex-wrap items-center">
             <select name="type" onchange="this.form.submit()"
                 class="bg-black/40 border border-purple-800/50 text-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none">
                 <option value="">Vendita & Permuta</option>

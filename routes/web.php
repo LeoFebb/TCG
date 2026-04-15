@@ -81,6 +81,8 @@ Route::middleware(['auth', 'tcg_validator'])
         Route::post('/transaction/{transaction}/reject', [ValidatorController::class, 'reject'])->name('transaction.reject');
         Route::post('/transaction/{transaction}/confirm-received', [ValidatorController::class, 'confirmReceived'])->name('transaction.confirm-received');
         Route::post('/transaction/{transaction}/mark-shipped', [ValidatorController::class, 'markShipped'])->name('mark-shipped');
+        Route::post('/transaction/{transaction}/received', [ValidatorController::class, 'markReceived'])->name('transaction.received');
+        Route::post('/validator/transaction/{transaction}/received', [ValidatorController::class, 'markReceived'])->name('validator.transaction.received');
     });
 
 // Carte

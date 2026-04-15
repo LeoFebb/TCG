@@ -22,10 +22,10 @@
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-10">
+    <div class="max-w-7xl mx-auto px-3 md:px-6 py-6 md:py-10">
 
         {{-- Statistiche --}}
-        <div class="grid grid-cols-3 gap-4 mb-10">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
             <div class="rounded-xl p-6 text-center border border-purple-900/50" style="background: rgba(45,17,84,0.3);">
                 <p class="text-3xl font-black text-purple-400">{{ $validators->count() }}</p>
                 <p class="text-gray-500 text-sm mt-1">Validatori attivi</p>
