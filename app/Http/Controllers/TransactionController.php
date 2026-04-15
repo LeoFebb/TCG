@@ -10,16 +10,14 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        $selling = Transaction::with(['card', 'buyer'])
+        $selling = Transaction::with(['card', 'buyer', 'validator', 'buyerValidator'])
             ->where('seller_id', Auth::id())
             ->latest()
             ->get();
-
-        $buying = Transaction::with(['card', 'seller'])
+        $buying = Transaction::with(['card', 'seller', 'validator', 'buyerValidator'])
             ->where('buyer_id', Auth::id())
             ->latest()
             ->get();
-
         return view('transactions.index', compact('selling', 'buying'));
     }
 
@@ -27,7 +25,7 @@ class TransactionController extends Controller
     {
         if ($transaction->type === 'trade') {
             abort_if($transaction->seller_id !== Auth::id() && $transaction->buyer_id !== Auth::id(), 403);
-            abort_if($transaction->status !== 'accepted', 422);
+            abort_if(!in_array($transaction->status, ['accepted', 'pending']), 422);
 
             if ($transaction->seller_id === Auth::id()) {
                 $transaction->update([

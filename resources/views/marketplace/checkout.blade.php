@@ -164,10 +164,16 @@
                             <p class="text-purple-400 text-xs font-mono uppercase tracking-widest mb-4">Pagamento</p>
 
                             {{-- Stripe Elements --}}
-                            <div class="mb-4">
+                           {{-- <div class="mb-4">
                                 <label class="block text-gray-400 text-sm mb-2">Carta di credito / debito</label>
                                 <div id="card-element" class="w-full px-4 py-3 rounded-xl border"
                                     style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
+                                    @if(!$stripePublicKey || !$clientSecret)
+    <div class="p-4 rounded-xl border border-red-800/50 text-red-400 text-sm mt-3"
+         style="background: rgba(127,29,29,0.2);">
+        &#9888; Pagamento non disponibile al momento. Riprova più tardi.
+    </div>
+@endif
                                 </div>
                                 <div id="card-errors" class="text-red-400 text-xs mt-1 hidden"></div>
                             </div>
@@ -269,14 +275,18 @@
         </div>
     </div>
     </div>
+   </div>
     </div>
-
+    </div>
 @endsection
 
+@push('head')
+<script src="https://js.stripe.com/v3/"></script>
+@endpush
 @push('scripts')
-    <script src="https://js.stripe.com/v3/"></script>
-    <script>
-        const stripe = Stripe('{{ $stripePublicKey }}');
+@if($stripePublicKey && $clientSecret)
+<script>
+const stripe = Stripe('{{ $stripePublicKey }}');
         const elements = stripe.elements({
             clientSecret: '{{ $clientSecret }}',
             appearance: {
@@ -363,4 +373,5 @@
             }
         });
     </script>
+@endif
 @endpush

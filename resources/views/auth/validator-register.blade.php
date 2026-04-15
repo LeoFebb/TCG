@@ -3,7 +3,7 @@
 @section('title', 'Registrazione Validatore — TCG Vault')
 
 @section('content')
-    <div class="max-w-2xl mx-auto px-6 py-14">
+    <div class="max-w-2xl mx-auto px-3 md:px-6 py-8 md:py-14">
 
         {{-- Header --}}
         <div class="text-center mb-12 animate-in">
@@ -266,7 +266,8 @@
 
             {{-- Submit --}}
             <button type="submit"
-                class="btn-gold w-full py-4 text-base tracking-wide flex items-center justify-center gap-3">
+                class="w-full py-4 text-base tracking-wide flex items-center justify-center gap-3 font-bold text-white rounded-lg"
+                style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

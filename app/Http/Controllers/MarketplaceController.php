@@ -138,16 +138,22 @@ class MarketplaceController extends Controller
      */
     public function createTradeOffer(Request $request)
     {
+        
         $request->validate([
             'card_id' => 'required|exists:cards,id',
             'offered_card_name' => 'required|string|max:255',
             'buyer_validator_id' => 'required|exists:users,id',
+            'offered_card_image' => 'required|image|max:5120',
         ]);
+
 
         $targetCard = Card::findOrFail($request->card_id);
 
         abort_if(!$targetCard->available_for_trade || $targetCard->status !== 'available', 422);
         abort_if($targetCard->user_id === Auth::id(), 403);
+
+        // Salva immagine
+            $imagePath = $request->file('offered_card_image')->store('cards', 'public');
 
         Transaction::create([
             'buyer_id' => Auth::id(),
@@ -163,6 +169,7 @@ class MarketplaceController extends Controller
             'shipping_cost' => 5.9,
             'shipping_country' => 'Italia',
             'validator_notes' => 'Carta offerta: ' . $request->offered_card_name,
+            'offered_card_image' => $imagePath,
         ]);
 
         $targetCard->update(['status' => 'in_negotiation']);

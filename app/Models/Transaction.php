@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    protected $fillable = ['buyer_id', 'seller_id', 'card_id', 'offered_card_id', 'validator_id', 'type', 'status', 'amount', 'platform_fee', 'shipping_cost', 'shipping_name', 'shipping_address', 'shipping_city', 'shipping_zip', 'shipping_country', 'shipping_phone', 'label_generated_at', 'stripe_intent_id', 'stripe_transfer_id', 'escrow_paid_at', 'funds_released_at', 'buyer_shipped', 'seller_shipped', 'validator_notes', 'validated_at', 'tracking_number', 'return_tracking_number', 'buyer_validator_id',"validator_received"];
+    protected $fillable = ['buyer_id', 'seller_id', 'card_id', 'offered_card_id', 'validator_id', 'type', 'status', 'amount', 'platform_fee', 'shipping_cost', 'shipping_name', 'shipping_address', 'shipping_city', 'shipping_zip', 'shipping_country', 'shipping_phone', 'label_generated_at', 'stripe_intent_id', 'stripe_transfer_id', 'escrow_paid_at', 'funds_released_at', 'buyer_shipped', 'seller_shipped', 'validator_notes', 'validated_at', 'tracking_number', 'return_tracking_number', 'buyer_validator_id', 'validator_received','offered_card_image',];
 
     protected $casts = [
         'amount' => 'decimal:2',
@@ -49,7 +49,10 @@ class Transaction extends Model
 
     public function canBeValidated(): bool
     {
-        return $this->status === 'in_validation' || ($this->status === 'accepted' && $this->type === 'trade');
+        if ($this->type === 'trade') {
+            return in_array($this->status, ['in_validation', 'accepted', 'pending']) && ($this->seller_shipped || $this->buyer_shipped);
+        }
+        return $this->status === 'in_validation';
     }
 
     public function isValidated(): bool

@@ -53,22 +53,17 @@ class EscrowController extends Controller
         $card->update(['status' => 'in_negotiation']);
 
         $clientSecret = null;
-        $stripePublicKey = null;
+$stripePublicKey = config('services.stripe.key');
+try {
+    $totalAmount = (int) ($card->price * 100) + self::SHIPPING_COST;
+    $paymentIntent = $this->escrowService->createPaymentIntent(amount: $totalAmount, sellerId: $card->user_id, cardId: $card->id);
+    $clientSecret = $paymentIntent->client_secret;
+    $transaction->update(['stripe_intent_id' => $paymentIntent->id]);
+} catch (\Exception $e) {
+    } catch (\Exception $e) {
+    Log::error('Stripe checkout error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
 
-        try {
-            $totalAmount = (int) ($card->price * 100) + self::SHIPPING_COST;
-
-            $paymentIntent = $this->escrowService->createPaymentIntent(amount: $totalAmount, sellerId: $card->user_id, cardId: $card->id);
-
-            $clientSecret = $paymentIntent->client_secret;
-            $stripePublicKey = config('services.stripe.key');
-
-            $transaction->update(['stripe_intent_id' => $paymentIntent->id]);
-        } catch (ApiErrorException $e) {
-            Log::warning('Stripe not configured, proceeding without payment', [
-                'error' => $e->getMessage(),
-            ]);
-        }
+}
 
         return view('marketplace.checkout', [
             'card' => $card,

@@ -55,13 +55,13 @@ class ShippingController extends Controller
             'destinatario' => $validatorAddress,
             'tipo' => 'VENDITORE → VALIDATORE',
             'istruzioni' => 'Inserire la carta in un toploader. Il validatore esaminerà la carta e la spedirà all\'acquirente.',
-            'generated_at' => now()->format('d/m/Y H:i'),
+            'generated_at' => now('Europe/Rome')->format('d/m/Y H:i'),
             'tracking_code' => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-V',
         ];
 
         $transaction->update(['label_generated_at' => now()]);
 
-        $pdf = Pdf::loadView('shipping.label', $data)->setPaper('a6', 'landscape');
+        $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 419, 298], 'portrait');
 
         return $pdf->download("etichetta-venditore-{$transaction->id}.pdf");
     }
@@ -72,107 +72,101 @@ class ShippingController extends Controller
      * La carta va rispedita all'acquirente finale.
      */
     public function generateReturnLabel(Transaction $transaction)
-{
-    // Sia il validatore del venditore che quello dell'acquirente possono generare l'etichetta
-    abort_if(
-        $transaction->validator_id !== Auth::id() && 
-        $transaction->buyer_validator_id !== Auth::id(), 
-        403, 
-        'Solo il validatore può generare questa etichetta.'
-    );
-    
-    abort_if(
-        !in_array($transaction->status, ['validated', 'shipping', 'accepted', 'in_validation']), 
-        422
-    );
+    {
+        // Sia il validatore del venditore che quello dell'acquirente possono generare l'etichetta
+        abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403, 'Solo il validatore può generare questa etichetta.');
 
-    $transaction->load(['card', 'buyer', 'seller', 'validator']);
+        abort_if(!in_array($transaction->status, ['validated', 'shipping', 'accepted', 'in_validation']), 422);
 
-    // Determina il destinatario in base a chi è il validatore
-    if ($transaction->validator_id === Auth::id()) {
-        // Validatore del venditore → spedisce all'acquirente
-        $destinatario = [
-            'name'    => $transaction->shipping_name ?? $transaction->buyer->name,
-            'address' => $transaction->shipping_address ?? '',
-            'city'    => $transaction->shipping_city ?? '',
-            'zip'     => $transaction->shipping_zip ?? '',
-            'country' => $transaction->shipping_country ?? 'Italia',
-            'phone'   => $transaction->shipping_phone ?? '',
+        $transaction->load(['card', 'buyer', 'seller', 'validator']);
+
+        // Determina il destinatario in base a chi è il validatore
+        if ($transaction->validator_id === Auth::id()) {
+            // Validatore del venditore → spedisce all'acquirente
+            $destinatario = [
+                'name' => $transaction->shipping_name ?? $transaction->buyer->name,
+                'address' => $transaction->shipping_address ?? '',
+                'city' => $transaction->shipping_city ?? '',
+                'zip' => $transaction->shipping_zip ?? '',
+                'country' => $transaction->shipping_country ?? 'Italia',
+                'phone' => $transaction->shipping_phone ?? '',
+            ];
+            $tipo = 'VALIDATORE → ACQUIRENTE';
+        } else {
+            // Validatore dell'acquirente → spedisce al venditore
+            $destinatario = [
+                'name' => $transaction->seller->name,
+                'address' => $transaction->seller->address ?? '',
+                'city' => $transaction->seller->city ?? '',
+                'zip' => $transaction->seller->zip ?? '',
+                'country' => $transaction->seller->country ?? 'Italia',
+                'phone' => $transaction->seller->phone ?? '',
+            ];
+            $tipo = 'VALIDATORE → VENDITORE';
+        }
+
+        $data = [
+            'transaction' => $transaction,
+            'mittente' => [
+                'nome' => Auth::user()->name . ' (Validatore TCG Vault)',
+                'ruolo' => 'Validatore',
+                'address' => Auth::user()->address ?? '',
+                'phone' => Auth::user()->phone ?? '',
+            ],
+            'destinatario' => $destinatario,
+            'tipo' => $tipo,
+            'istruzioni' => 'Carta certificata autentica da TCG Vault. Spedire con cura in imballo protettivo.',
+            'generated_at' => now('Europe/Rome')->format('d/m/Y H:i'),
+            'tracking_code' => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-R',
+            'is_return' => true,
         ];
-        $tipo = 'VALIDATORE → ACQUIRENTE';
-    } else {
-        // Validatore dell'acquirente → spedisce al venditore
-        $destinatario = [
-            'name'    => $transaction->seller->name,
-            'address' => $transaction->seller->address ?? '',
-            'city'    => $transaction->seller->city ?? '',
-            'zip'     => $transaction->seller->zip ?? '',
-            'country' => $transaction->seller->country ?? 'Italia',
-            'phone'   => $transaction->seller->phone ?? '',
-        ];
-        $tipo = 'VALIDATORE → VENDITORE';
+
+        $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 419, 298], 'portrait');
+
+        return $pdf->download("etichetta-rispedizione-{$transaction->id}.pdf");
     }
-
-    $data = [
-        'transaction'   => $transaction,
-        'mittente'      => [
-            'nome'    => Auth::user()->name . ' (Validatore TCG Vault)',
-            'ruolo'   => 'Validatore',
-            'address' => Auth::user()->address ?? '',
-            'phone'   => Auth::user()->phone ?? '',
-        ],
-        'destinatario'  => $destinatario,
-        'tipo'          => $tipo,
-        'istruzioni'    => 'Carta certificata autentica da TCG Vault. Spedire con cura in imballo protettivo.',
-        'generated_at'  => now()->format('d/m/Y H:i'),
-        'tracking_code' => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-R',
-        'is_return'     => true,
-    ];
-
-    $pdf = Pdf::loadView('shipping.label', $data)->setPaper('a6', 'landscape');
-
-    return $pdf->download("etichetta-rispedizione-{$transaction->id}.pdf");
-}
 
     /**
      * ETICHETTA PERMUTA ACQUIRENTE: Acquirente → Validatore acquirente
      */
     public function generateBuyerTradeLabel(Transaction $transaction)
-    {
-        abort_if($transaction->buyer_id !== Auth::id(), 403);
-        abort_if($transaction->type !== 'trade', 422);
-        abort_if(!in_array($transaction->status, ['accepted', 'in_validation']), 422);
+{
+    abort_if($transaction->buyer_id !== Auth::id(), 403);
+    abort_if($transaction->type !== 'trade', 422);
+    abort_if(!in_array($transaction->status, ['accepted', 'in_validation', 'pending']), 422);
 
-        $transaction->load(['card', 'buyer', 'seller', 'buyerValidator']);
+    $transaction->load(['card', 'buyer', 'seller', 'buyerValidator']);
+    $validator = $transaction->buyerValidator;
 
-        $validator = $transaction->buyerValidator;
+    // Nome carta offerta dall'acquirente
+    $offeredCardName = str_replace('Carta offerta: ', '', $transaction->validator_notes ?? 'Carta non specificata');
 
-        $data = [
-            'transaction' => $transaction,
-            'mittente' => [
-                'nome' => $transaction->buyer->name,
-                'ruolo' => 'Acquirente',
-                'address' => $transaction->buyer->address ?? '',
-                'phone' => $transaction->buyer->phone ?? '',
-            ],
-            'destinatario' => [
-                'name' => $validator ? $validator->name . ' (Validatore TCG Vault)' : 'TCG Vault — Centro Validazione',
-                'address' => $validator?->address ?? 'Da confermare',
-                'city' => $validator?->city ?? '',
-                'zip' => $validator?->zip ?? '',
-                'country' => $validator?->country ?? 'Italia',
-                'phone' => $validator?->phone ?? '',
-            ],
-            'tipo' => 'ACQUIRENTE → VALIDATORE',
-            'istruzioni' => 'Inserire la carta in un toploader. Il validatore esaminerà la carta.',
-            'generated_at' => now()->format('d/m/Y H:i'),
-            'tracking_code' => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-BV',
-        ];
+    $data = [
+        'transaction'   => $transaction,
+        'mittente'      => [
+            'nome'    => $transaction->buyer->name,
+            'ruolo'   => 'Acquirente',
+            'address' => $transaction->buyer->address ?? '',
+            'phone'   => $transaction->buyer->phone ?? '',
+        ],
+        'destinatario'  => [
+            'name'    => $validator ? $validator->name . ' (Validatore TCG Vault)' : 'TCG Vault — Centro Validazione',
+            'address' => $validator?->address ?? 'Da confermare',
+            'city'    => $validator?->city ?? '',
+            'zip'     => $validator?->zip ?? '',
+            'country' => $validator?->country ?? 'Italia',
+            'phone'   => $validator?->phone ?? '',
+        ],
+        'tipo'           => 'ACQUIRENTE → VALIDATORE',
+        'istruzioni'     => 'Inserire la carta in un toploader. Il validatore esaminerà la carta.',
+        'generated_at'   => now('Europe/Rome')->format('d/m/Y H:i'),
+        'tracking_code'  => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-BV',
+        'offered_card_name' => $offeredCardName,
+    ];
 
-        $pdf = Pdf::loadView('shipping.label', $data)->setPaper('a6', 'landscape');
-
-        return $pdf->download("etichetta-acquirente-{$transaction->id}.pdf");
-    }
+    $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 419, 298], 'portrait');
+    return $pdf->download("etichetta-acquirente-{$transaction->id}.pdf");
+}
 
     /**
      * ETICHETTA PERMUTA VENDITORE: Venditore → Validatore venditore
@@ -205,11 +199,11 @@ class ShippingController extends Controller
             ],
             'tipo' => 'VENDITORE → VALIDATORE',
             'istruzioni' => 'Inserire la carta in un toploader. Il validatore esaminerà la carta.',
-            'generated_at' => now()->format('d/m/Y H:i'),
+            'generated_at' => now('Europe/Rome')->format('d/m/Y H:i'),
             'tracking_code' => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-SV',
         ];
 
-        $pdf = Pdf::loadView('shipping.label', $data)->setPaper('a6', 'landscape');
+        $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 419, 298], 'portrait');
 
         return $pdf->download("etichetta-venditore-{$transaction->id}.pdf");
     }

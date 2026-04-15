@@ -148,7 +148,7 @@
                             </div>
                             @auth
                                 @if ($card->user_id !== auth()->id() && isset($tradeOptions))
-                                    <form method="POST" action="{{ route('trade.offer') }}">
+                                    <form method="POST" action="{{ route('trade.offer') }}" enctype="multipart/form-data">
                                         @csrf
                                         <input type="hidden" name="card_id" value="{{ $card->id }}">
 
@@ -187,6 +187,18 @@
                                                 @endforeach
                                             </select>
                                         </div>
+                                        <div class="mb-3">
+    <label class="block text-gray-400 text-sm mb-2">&#128247; Foto della tua carta *</label>
+    <label for="offered_card_image" class="block border-2 border-dashed border-purple-800/50 rounded-xl p-4 text-center cursor-pointer hover:border-purple-500 transition">
+        <div id="offered-preview" class="hidden mb-3">
+            <img id="offered-img" src="" class="max-h-40 mx-auto rounded-lg">
+        </div>
+        <p class="text-gray-400 text-sm" id="offered-text">Clicca per caricare la foto della tua carta</p>
+        <p class="text-gray-600 text-xs mt-1">JPEG, PNG · Max 5MB</p>
+    </label>
+    <input type="file" id="offered_card_image" name="offered_card_image" accept="image/*" required
+       style="display:none;" onchange="previewOfferedCard(this)">
+</div>
                                         <button type="submit" <button type="submit"
                                             class="w-full py-3 rounded-xl font-bold text-white text-sm border border-blue-700 hover:bg-blue-900/30 transition">
                                             &#128260; Proponi permuta
@@ -205,66 +217,102 @@
             </div>
         </div>
     </div>
+    <script>
+function previewOfferedCard(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        const file = input.files[0];
+        reader.onload = function(e) {
+            document.getElementById('offered-img').src = e.target.result;
+            document.getElementById('offered-preview').classList.remove('hidden');
+            document.getElementById('offered-text').textContent = file.name;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+<script>
+function previewOfferedCard(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        const file = input.files[0];
+        reader.onload = function(e) {
+            document.getElementById('offered-img').src = e.target.result;
+            document.getElementById('offered-preview').classList.remove('hidden');
+            document.getElementById('offered-text').textContent = file.name;
+        };
+        reader.readAsDataURL(file);
+    }
+}
 
+function handleTradeSelect(select) {
+    const manualInput = document.getElementById('trade-manual-input');
+    if (select.value === '__manual__') {
+        manualInput.classList.remove('hidden');
+        manualInput.required = true;
+        select.name = '';
+        manualInput.name = 'offered_card_name';
+        manualInput.focus();
+    } else {
+        manualInput.classList.add('hidden');
+        manualInput.required = false;
+        select.name = 'offered_card_name';
+        manualInput.name = '';
+    }
+}
+</script>
     @push('scripts')
-        <script>
-            const tradeSearch = document.getElementById('trade-search');
-            const tradeSelect = document.getElementById('trade-select');
-
-            if (tradeSearch && tradeSelect) {
-                const options = Array.from(tradeSelect.options);
-
-                tradeSearch.addEventListener('input', function() {
-                    const query = this.value.toLowerCase();
-
-                    Array.from(tradeSelect.options).forEach(opt => {
-                        if (opt.value === '') return;
-                        opt.style.display = opt.text.toLowerCase().includes(query) ? '' : 'none';
-                    });
-                });
+<script defer>
+window.addEventListener('load', function() {
+    const offeredInput = document.getElementById('offered_card_image');
+    if (offeredInput) {
+        offeredInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                const file = this.files[0];
+                reader.onload = function(e) {
+                    document.getElementById('offered-img').src = e.target.result;
+                    document.getElementById('offered-preview').classList.remove('hidden');
+                    document.getElementById('offered-text').textContent = file.name;
+                };
+                reader.readAsDataURL(file);
             }
+        });
+    }
+});
 
-            function handleTradeSelect(select) {
-                const manualInput = document.getElementById('trade-manual-input');
-                if (select.value === '__manual__') {
-                    manualInput.classList.remove('hidden');
-                    manualInput.required = true;
-                    select.name = '';
-                    manualInput.name = 'offered_card_name';
-                    manualInput.focus();
-                } else {
-                    manualInput.classList.add('hidden');
-                    manualInput.required = false;
-                    select.name = 'offered_card_name';
-                    manualInput.name = '';
-                }
-            }
+function handleTradeSelect(select) {
+    const manualInput = document.getElementById('trade-manual-input');
+    if (select.value === '__manual__') {
+        manualInput.classList.remove('hidden');
+        manualInput.required = true;
+        select.name = '';
+        manualInput.name = 'offered_card_name';
+        manualInput.focus();
+    } else {
+        manualInput.classList.add('hidden');
+        manualInput.required = false;
+        select.name = 'offered_card_name';
+        manualInput.name = '';
+    }
+}
 
-            // Quando l'utente scrive una carta manualmente, la aggiunge al catalogo
-            document.getElementById('trade-manual-input')?.addEventListener('blur', function() {
-                const cardName = this.value.trim();
-                if (cardName.length > 2) {
-                    fetch('{{ route('catalog.add-card') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            card_name: cardName,
-                            category: '{{ $card->tcg_category }}'
-                        })
-                    }).then(() => {
-                        // Aggiunge la carta al select
-                        const select = document.getElementById('trade-select-dropdown');
-                        const option = document.createElement('option');
-                        option.value = cardName;
-                        option.text = cardName;
-                        select.add(option, select.options[select.options.length - 1]);
-                    });
-                }
-            });
-        </script>
-    @endpush
-
+document.getElementById('trade-manual-input')?.addEventListener('blur', function() {
+    const cardName = this.value.trim();
+    if (cardName.length > 2) {
+        fetch('{{ route("catalog.add-card") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                card_name: cardName,
+                category: '{{ $card->tcg_category }}'
+            })
+        });
+    }
+});
+</script>
+@endpush
 @endsection

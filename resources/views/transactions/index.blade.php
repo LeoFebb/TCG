@@ -60,6 +60,30 @@
                             </span>
                         </div>
                     </div>
+                    @if ($t->type === 'trade' && $t->status !== 'pending')
+                        <div class="mt-4 rounded-xl p-4 border border-blue-800/50"
+                            style="background: rgba(59,130,246,0.05);">
+                            <p class="text-blue-400 font-bold text-sm mb-2">&#128260; Permuta</p>
+                            @if ($t->validator_notes)
+                                <p class="text-gray-400 text-xs mb-2">
+                                    Carta offerta: <span
+                                        class="text-white font-bold">{{ str_replace('Carta offerta: ', '', $t->validator_notes) }}</span>
+                                </p>
+                            @endif
+                            <div class="flex flex-col gap-1">
+                                @if ($t->validator)
+                                    <p class="text-gray-500 text-xs">&#128737; Validatore venditore: <span
+                                            class="text-purple-400 font-bold">{{ $t->validator->name }}</span> —
+                                        {{ $t->validator->city }}</p>
+                                @endif
+                                @if ($t->buyerValidator)
+                                    <p class="text-gray-500 text-xs">&#128737; Validatore acquirente: <span
+                                            class="text-purple-400 font-bold">{{ $t->buyerValidator->name }}</span> —
+                                        {{ $t->buyerValidator->city }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                     @if ($t->status === 'pending' && $t->type === 'trade')
                         <div class="mt-4 rounded-xl p-4 border border-blue-800/50"
                             style="background: rgba(59,130,246,0.05);">
@@ -68,6 +92,18 @@
                                 Carta offerta: <span
                                     class="text-white font-bold">{{ str_replace('Carta offerta: ', '', $t->validator_notes) }}</span>
                             </p>
+                            <div class="flex flex-col gap-1 mt-2">
+                                @if ($t->validator)
+                                    <p class="text-gray-500 text-xs">&#128737; Validatore venditore: <span
+                                            class="text-purple-400 font-bold">{{ $t->validator->name }}</span> —
+                                        {{ $t->validator->city }}</p>
+                                @endif
+                                @if ($t->buyerValidator)
+                                    <p class="text-gray-500 text-xs">&#128737; Validatore acquirente: <span
+                                            class="text-purple-400 font-bold">{{ $t->buyerValidator->name }}</span> —
+                                        {{ $t->buyerValidator->city }}</p>
+                                @endif
+                            </div>
                             <div class="flex flex-col gap-4">
                                 @if ($t->status === 'pending' && $t->type === 'trade')
                                     <form method="POST" action="{{ route('transaction.accept-trade', $t) }}">
@@ -199,8 +235,8 @@
                             @elseif($t->status === 'in_validation') bg-purple-900/50 text-purple-400 border border-purple-800
                             @elseif($t->status === 'shipping') bg-blue-900/50 text-blue-400 border border-blue-800
                             @else bg-gray-900/50 text-gray-400 border border-gray-800 @endif">
-                               
-                                @if ($t->status === 'accepted' && $t->type === 'trade' && $t->buyer_id === Auth::id())
+
+                                @if (($t->status === 'accepted' || $t->status === 'pending') && $t->type === 'trade' && $t->buyer_id === Auth::id())
                                     <div class="mt-4 rounded-xl p-5 border border-blue-800/50"
                                         style="background: rgba(59,130,246,0.05);">
                                         <p class="text-blue-400 font-bold text-sm mb-1">&#128260; Permuta accettata!</p>
@@ -226,7 +262,7 @@
                                         </form>
                                     </div>
                                 @endif
-                               
+
                                 @if ($t->status === 'pending')
                                     &#9203; In attesa
                                 @elseif($t->status === 'paid_escrow')

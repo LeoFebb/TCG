@@ -348,9 +348,7 @@
                 document.getElementById('cookie-banner').style.display = 'none';
             }
         </script>
-    @endpush
-
-    @stack('scripts')
+        @stack('scripts')
     <script>
         document.getElementById('mobile-menu-btn').addEventListener('click', function() {
             const menu = document.getElementById('mobile-menu');
@@ -361,6 +359,7 @@
             close.classList.toggle('hidden');
         });
     </script>
+    @endpush
 </body>
 
 </html>
