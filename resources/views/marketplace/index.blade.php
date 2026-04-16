@@ -11,6 +11,15 @@
 
 @section('content')
 
+@if(request('expired'))
+    <div class="max-w-7xl mx-auto px-4 py-4">
+        <div class="rounded-xl p-4 border border-red-800/50 text-red-400 text-sm"
+             style="background: rgba(127,29,29,0.2);">
+            &#9203; Il tempo per completare il pagamento è scaduto. La carta è tornata disponibile.
+        </div>
+    </div>
+@endif
+
     {{-- HEADER MARKETPLACE --}}
     <div class="py-10 px-6 border-b border-purple-900/30" style="background: rgba(45, 17, 84, 0.2);">
         <div class="max-w-7xl mx-auto">
@@ -121,6 +130,7 @@
 
         {{-- GRID CARTE --}}
         @forelse($cards as $card)
+
             @if ($loop->first)
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-10">
             @endif
@@ -146,7 +156,12 @@
                             €{{ number_format($card->price, 2) }}
                         </div>
                     @endif
-
+                        @if (isset($card->sellers_count) && $card->sellers_count > 1)
+    <div class="absolute bottom-2 left-2 px-2 py-1 rounded-lg text-xs font-bold text-white"
+        style="background: rgba(0,0,0,0.7);">
+        &#128101; {{ $card->sellers_count }} venditori
+    </div>
+@endif
                     @if ($card->available_for_trade)
                         <div class="absolute top-2 left-2 px-2 py-1 rounded-lg text-xs font-bold text-white"
                             style="background: rgba(16, 185, 129, 0.9);">

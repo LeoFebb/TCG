@@ -400,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (timeLeft <= 0) {
             clearInterval(interval);
-            window.location.href = '{{ route('marketplace.index') }}';
+            window.location.href = '{{ route('marketplace.index') }}?expired=1';
         }
     }, 1000);
 });

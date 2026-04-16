@@ -110,7 +110,31 @@
                                 <span class="text-gray-400 text-sm">&#8364;5.90</span>
                             </div>
                         </div>
-
+                        @if(isset($otherSellers) && $otherSellers->count() > 0)
+    <div class="mb-4 rounded-xl border border-purple-900/50 p-4" style="background: rgba(45,17,84,0.2);">
+        <p class="text-purple-400 font-bold text-sm mb-3">&#128101; {{ $otherSellers->count() + 1 }} venditori disponibili</p>
+        <div class="space-y-2">
+            {{-- Venditore corrente --}}
+            <div class="flex justify-between items-center p-2 rounded-lg border border-purple-500/50" style="background: rgba(124,58,237,0.1);">
+                <div>
+                    <p class="text-white text-sm font-bold">{{ $card->owner->name }}</p>
+                    <p class="text-gray-500 text-xs">{{ $card->condition }}</p>
+                </div>
+                <span class="text-purple-400 font-bold">&#8364;{{ number_format($card->price, 2) }}</span>
+            </div>
+            {{-- Altri venditori --}}
+            @foreach($otherSellers as $seller)
+                <a href="{{ route('marketplace.show', $seller) }}" class="flex justify-between items-center p-2 rounded-lg border border-purple-900/30 hover:border-purple-500/50 transition" style="background: rgba(45,17,84,0.2);">
+                    <div>
+                        <p class="text-white text-sm">{{ $seller->owner->name }}</p>
+                        <p class="text-gray-500 text-xs">{{ $seller->condition }}</p>
+                    </div>
+                    <span class="text-green-400 font-bold">&#8364;{{ number_format($seller->price, 2) }}</span>
+                </a>
+            @endforeach
+        </div>
+    </div>
+@endif
                         @auth
                             @if ($card->user_id !== auth()->id() && auth()->user()->role !== 'validator')
                                 <a href="{{ route('checkout', $card) }}"

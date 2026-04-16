@@ -13,16 +13,22 @@ class ReleaseExpiredCheckouts extends Command
     public function handle(): void
     {
         $expired = Transaction::where('status', 'pending_payment')
-            ->where('checkout_expires_at', '<', now())
-            ->with('card')
-            ->get();
+    ->where(function($q) {
+        $q->where('checkout_expires_at', '<', now())
+          ->orWhere(function($q2) {
+              $q2->whereNull('checkout_expires_at')
+                 ->where('created_at', '<', now()->subMinutes(1));
+          });
+    })
+    ->with('card')
+    ->get();
 
         foreach ($expired as $transaction) {
-            $transaction->card->update(['status' => 'available']);
-            $transaction->delete();
-            $this->info("Carta liberata: {$transaction->card->name}");
+    $transaction->update(['status' => 'rejected']);
+    if ($transaction->card) {
+        $transaction->card->update(['status' => 'available']);
+        $this->info("Carta liberata: {$transaction->card->name}");
+            }
         }
-
-        $this->info("✅ {$expired->count()} carte liberate.");
     }
 }

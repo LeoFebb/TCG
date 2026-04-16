@@ -103,7 +103,10 @@ $paymentIntent = \Stripe\PaymentIntent::retrieve($transaction->stripe_intent_id)
                     'escrow_paid_at' => now(),
                 ]);
                 $transaction->card->update(['status' => 'in_negotiation']);
-            }
+            } elseif (in_array($paymentIntent->status, ['canceled', 'payment_failed'])) {
+    $transaction->update(['status' => 'rejected']);
+    $transaction->card->update(['status' => 'available']);
+}
         } catch (\Exception $e) {
             Log::error('Stripe checkout success error: ' . $e->getMessage());
         }

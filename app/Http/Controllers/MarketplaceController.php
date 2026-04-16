@@ -23,33 +23,53 @@ class MarketplaceController extends Controller
      * Homepage del marketplace: lista carte disponibili con filtri.
      */
     public function index(Request $request)
-    {
-        $query = Card::with('owner')->available()->latest();
+{
+    $query = Card::with('owner')->available()->latest();
 
-        if ($request->filled('category')) {
-            $query->where('tcg_category', $request->category);
-        }
-        if ($request->get('type') === 'sale') {
-            $query->whereNotNull('price');
-        } elseif ($request->get('type') === 'trade') {
-            $query->where('available_for_trade', true);
-        }
-        if ($request->filled('condition')) {
-            $query->where('condition', $request->condition);
-        }
-        if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
-        if ($request->get('sort') === 'price_asc') {
-            $query->orderBy('price', 'asc');
-        } elseif ($request->get('sort') === 'price_desc') {
-            $query->orderBy('price', 'desc');
-        }
-
-        $cards = $query->paginate(24);
-
-        return view('marketplace.index', compact('cards'));
+    if ($request->filled('category')) {
+        $query->where('tcg_category', $request->category);
     }
+    if ($request->get('type') === 'sale') {
+        $query->whereNotNull('price');
+    } elseif ($request->get('type') === 'trade') {
+        $query->where('available_for_trade', true);
+    }
+    if ($request->filled('condition')) {
+        $query->where('condition', $request->condition);
+    }
+    if ($request->filled('max_price')) {
+        $query->where('price', '<=', $request->max_price);
+    }
+    if ($request->get('sort') === 'price_asc') {
+        $query->orderBy('price', 'asc');
+    } elseif ($request->get('sort') === 'price_desc') {
+        $query->orderBy('price', 'desc');
+    }
+
+    $allCards = $query->get();
+    
+    $grouped = $allCards->groupBy('name')->map(function($group) {
+       
+    $card = $group->whereNotNull('price')->sortBy('price')->first() ?? $group->first();
+    $card->sellers_count = $group->count();
+    $card->min_price = $group->whereNotNull('price')->min('price');
+    return $card;
+})->values();
+
+$page = max(1, (int) $request->get('page', 1));
+$perPage = 24;
+$items = $grouped->slice(($page - 1) * $perPage, $perPage)->values();
+
+$cards = new \Illuminate\Pagination\LengthAwarePaginator(
+    $items,
+    $grouped->count(),
+    $perPage,
+    $page,
+    ['path' => $request->url(), 'query' => $request->query()]
+);
+
+    return view('marketplace.index', compact('cards'));
+}
 
     public function trades(Request $request)
     {
@@ -107,24 +127,29 @@ class MarketplaceController extends Controller
      * Pagina di dettaglio di una carta.
      */
     public function show(Card $card, Request $request)
-    {
-        $card->load('owner');
-
-        $tradeOptions = [];
-        if (Auth::check() && $card->available_for_trade) {
-            $tradeOptions = Card::where('user_id', Auth::id())->where('status', 'available')->where('id', '!=', $card->id)->get();
-        }
-
-        // Catalogo carte per la permuta
-        $catalogCards = collect();
-        if (Auth::check() && $card->available_for_trade) {
-            $catalogCards = \App\Models\TcgCardCatalog::where('tcg_category', $card->tcg_category)
-                ->orderBy('name')
-                ->get(['id', 'name', 'set_name', 'card_number', 'rarity', 'image_url']);
-        }
-
-        return view('marketplace.show', compact('card', 'tradeOptions', 'catalogCards'));
+{
+    $card->load('owner');
+    
+    // Altri venditori della stessa carta
+    $otherSellers = Card::with('owner')
+        ->available()
+        ->where('name', $card->name)
+        ->where('id', '!=', $card->id)
+        ->orderBy('price', 'asc')
+        ->get();
+    
+    $tradeOptions = [];
+    if (Auth::check() && $card->available_for_trade) {
+        $tradeOptions = Card::where('user_id', Auth::id())->where('status', 'available')->where('id', '!=', $card->id)->get();
     }
+    $catalogCards = collect();
+    if (Auth::check() && $card->available_for_trade) {
+        $catalogCards = \App\Models\TcgCardCatalog::where('tcg_category', $card->tcg_category)
+            ->orderBy('name')
+            ->get(['id', 'name', 'set_name', 'card_number', 'rarity', 'image_url']);
+    }
+    return view('marketplace.show', compact('card', 'tradeOptions', 'catalogCards', 'otherSellers'));
+}
 
     /**
      * Crea un'offerta di permuta (trade offer).

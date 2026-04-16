@@ -45,4 +45,7 @@ class Card extends Model
     {
         return $query->available()->where('available_for_trade', true);
     }
+
+    public $sellers_count = 1;
+public $min_price = null;
 }
