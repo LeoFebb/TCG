@@ -174,7 +174,7 @@
                             <p class="text-purple-400 text-xs font-mono uppercase tracking-widest mb-4">Pagamento</p>
 
                             {{-- Stripe Elements --}}
-                           {{-- <div class="mb-4">
+                            <div class="mb-4">
                                 <label class="block text-gray-400 text-sm mb-2">Carta di credito / debito</label>
                                 <div id="card-element" class="w-full px-4 py-3 rounded-xl border"
                                     style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
@@ -288,34 +288,9 @@
    </div>
     </div>
     </div>
-@endsection
-@push('head')
-<script>
-// Timer countdown 5 minuti
-document.addEventListener('DOMContentLoaded', function() {
-    let timeLeft = 300;
-    const timerEl = document.getElementById('checkout-timer');
-    if (!timerEl) return;
-    const interval = setInterval(function() {
-        timeLeft--;
-        const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-        const sec = (timeLeft % 60).toString().padStart(2, '0');
-        timerEl.textContent = min + ':' + sec;
-        if (timeLeft <= 60) {
-            timerEl.style.color = '#f87171';
-        }
-        if (timeLeft <= 0) {
-            clearInterval(interval);
-            window.location.href = '{{ route('marketplace.index') }}';
-        }
-    }, 1000);
-});
-</script>
-@endpush
-@push('head')
 <script src="https://js.stripe.com/v3/"></script>
-@endpush
-@push('scripts')
+
+
 @if($stripePublicKey && $clientSecret)
 <script>
 const stripe = Stripe('{{ $stripePublicKey }}');
@@ -406,4 +381,30 @@ const stripe = Stripe('{{ $stripePublicKey }}');
         });
     </script>
 @endif
+
+@endsection
+@push('head')
+<script>
+// Timer countdown 5 minuti
+document.addEventListener('DOMContentLoaded', function() {
+    let timeLeft = 300;
+    const timerEl = document.getElementById('checkout-timer');
+    if (!timerEl) return;
+    const interval = setInterval(function() {
+        timeLeft--;
+        const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const sec = (timeLeft % 60).toString().padStart(2, '0');
+        timerEl.textContent = min + ':' + sec;
+        if (timeLeft <= 60) {
+            timerEl.style.color = '#f87171';
+        }
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            window.location.href = '{{ route('marketplace.index') }}';
+        }
+    }, 1000);
+});
+</script>
 @endpush
+
+
