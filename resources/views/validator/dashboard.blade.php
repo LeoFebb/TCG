@@ -318,7 +318,13 @@
                         <tbody>
                             @foreach ($completedTasks as $t)
                                 <tr class="border-b border-vault-border/50 hover:bg-vault-surface/50 transition-colors">
-                                    <td class="px-6 py-3 font-body text-sm text-vault-text">{{ $t->card->name }}</td>
+                                    <td class="px-6 py-3 font-body text-sm text-vault-text">
+    @if($t->type === 'trade' && $t->buyer_validator_id === Auth::id() && $t->offered_card_name)
+        {{ $t->offered_card_name }}
+    @else
+        {{ $t->card->name }}
+    @endif
+</td>
                                     <td class="px-6 py-3">
                                         <span class="font-mono text-xs text-vault-muted uppercase">
                                             {{ $t->type === 'sale' ? 'Vendita' : 'Permuta' }}

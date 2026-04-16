@@ -23,53 +23,49 @@ class MarketplaceController extends Controller
      * Homepage del marketplace: lista carte disponibili con filtri.
      */
     public function index(Request $request)
-{
-    $query = Card::with('owner')->available()->latest();
+    {
+        $query = Card::with('owner')->available()->latest();
 
-    if ($request->filled('category')) {
-        $query->where('tcg_category', $request->category);
-    }
-    if ($request->get('type') === 'sale') {
-        $query->whereNotNull('price');
-    } elseif ($request->get('type') === 'trade') {
-        $query->where('available_for_trade', true);
-    }
-    if ($request->filled('condition')) {
-        $query->where('condition', $request->condition);
-    }
-    if ($request->filled('max_price')) {
-        $query->where('price', '<=', $request->max_price);
-    }
-    if ($request->get('sort') === 'price_asc') {
-        $query->orderBy('price', 'asc');
-    } elseif ($request->get('sort') === 'price_desc') {
-        $query->orderBy('price', 'desc');
-    }
+        if ($request->filled('category')) {
+            $query->where('tcg_category', $request->category);
+        }
+        if ($request->get('type') === 'sale') {
+            $query->whereNotNull('price');
+        } elseif ($request->get('type') === 'trade') {
+            $query->where('available_for_trade', true);
+        }
+        if ($request->filled('condition')) {
+            $query->where('condition', $request->condition);
+        }
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+        if ($request->get('sort') === 'price_asc') {
+            $query->orderBy('price', 'asc');
+        } elseif ($request->get('sort') === 'price_desc') {
+            $query->orderBy('price', 'desc');
+        }
 
-    $allCards = $query->get();
-    
-    $grouped = $allCards->groupBy('name')->map(function($group) {
-       
-    $card = $group->whereNotNull('price')->sortBy('price')->first() ?? $group->first();
-    $card->sellers_count = $group->count();
-    $card->min_price = $group->whereNotNull('price')->min('price');
-    return $card;
-})->values();
+        $allCards = $query->get();
 
-$page = max(1, (int) $request->get('page', 1));
-$perPage = 24;
-$items = $grouped->slice(($page - 1) * $perPage, $perPage)->values();
+        $grouped = $allCards
+            ->groupBy('name')
+            ->map(function ($group) {
+                $card = $group->whereNotNull('price')->sortBy('price')->first() ?? $group->first();
+                $card->sellers_count = $group->count();
+                $card->min_price = $group->whereNotNull('price')->min('price');
+                return $card;
+            })
+            ->values();
 
-$cards = new \Illuminate\Pagination\LengthAwarePaginator(
-    $items,
-    $grouped->count(),
-    $perPage,
-    $page,
-    ['path' => $request->url(), 'query' => $request->query()]
-);
+        $page = max(1, (int) $request->get('page', 1));
+        $perPage = 24;
+        $items = $grouped->slice(($page - 1) * $perPage, $perPage)->values();
 
-    return view('marketplace.index', compact('cards'));
-}
+        $cards = new \Illuminate\Pagination\LengthAwarePaginator($items, $grouped->count(), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
+
+        return view('marketplace.index', compact('cards'));
+    }
 
     public function trades(Request $request)
     {
@@ -127,29 +123,24 @@ $cards = new \Illuminate\Pagination\LengthAwarePaginator(
      * Pagina di dettaglio di una carta.
      */
     public function show(Card $card, Request $request)
-{
-    $card->load('owner');
-    
-    // Altri venditori della stessa carta
-    $otherSellers = Card::with('owner')
-        ->available()
-        ->where('name', $card->name)
-        ->where('id', '!=', $card->id)
-        ->orderBy('price', 'asc')
-        ->get();
-    
-    $tradeOptions = [];
-    if (Auth::check() && $card->available_for_trade) {
-        $tradeOptions = Card::where('user_id', Auth::id())->where('status', 'available')->where('id', '!=', $card->id)->get();
+    {
+        $card->load('owner');
+
+        // Altri venditori della stessa carta
+        $otherSellers = Card::with('owner')->available()->where('name', $card->name)->where('id', '!=', $card->id)->orderBy('price', 'asc')->get();
+
+        $tradeOptions = [];
+        if (Auth::check() && $card->available_for_trade) {
+            $tradeOptions = Card::where('user_id', Auth::id())->where('status', 'available')->where('id', '!=', $card->id)->get();
+        }
+        $catalogCards = collect();
+        if (Auth::check() && $card->available_for_trade) {
+            $catalogCards = \App\Models\TcgCardCatalog::where('tcg_category', $card->tcg_category)
+                ->orderBy('name')
+                ->get(['id', 'name', 'set_name', 'card_number', 'rarity', 'image_url']);
+        }
+        return view('marketplace.show', compact('card', 'tradeOptions', 'catalogCards', 'otherSellers'));
     }
-    $catalogCards = collect();
-    if (Auth::check() && $card->available_for_trade) {
-        $catalogCards = \App\Models\TcgCardCatalog::where('tcg_category', $card->tcg_category)
-            ->orderBy('name')
-            ->get(['id', 'name', 'set_name', 'card_number', 'rarity', 'image_url']);
-    }
-    return view('marketplace.show', compact('card', 'tradeOptions', 'catalogCards', 'otherSellers'));
-}
 
     /**
      * Crea un'offerta di permuta (trade offer).
@@ -163,14 +154,12 @@ $cards = new \Illuminate\Pagination\LengthAwarePaginator(
      */
     public function createTradeOffer(Request $request)
     {
-        
         $request->validate([
-            'card_id' => 'required|exists:cards,id',
-            'offered_card_name' => 'required|string|max:255',
-            'buyer_validator_id' => 'required|exists:users,id',
-            'offered_card_image' => 'required|image|max:5120',
-        ]);
-
+    'card_id' => 'required|exists:cards,id',
+    'offered_card_name' => 'required|string|max:255',
+    'buyer_validator_id' => 'required|exists:users,id',
+    'offered_card_image' => 'required|image|max:5120',
+]);
 
         $targetCard = Card::findOrFail($request->card_id);
 
@@ -178,7 +167,7 @@ $cards = new \Illuminate\Pagination\LengthAwarePaginator(
         abort_if($targetCard->user_id === Auth::id(), 403);
 
         // Salva immagine
-            $imagePath = $request->file('offered_card_image')->store('cards', 'public');
+        $imagePath = $request->file('offered_card_image')->store('cards', 'public');
 
         Transaction::create([
             'buyer_id' => Auth::id(),

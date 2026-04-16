@@ -97,7 +97,7 @@ class ValidatorController extends Controller
         ]);
 
         abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403);
-        abort_if(!in_array($transaction->status, ['in_validation', 'accepted']), 422, 'Questa transazione non è in attesa di validazione.');
+        abort_if(!in_array($transaction->status, ['in_validation', 'accepted', 'pending']), 422, 'Questa transazione non è in attesa di validazione.');
         DB::transaction(function () use ($transaction, $validated) {
             // Per le PERMUTE: verifica che entrambi abbiano spedito le carte
             if ($transaction->type === 'trade') {
