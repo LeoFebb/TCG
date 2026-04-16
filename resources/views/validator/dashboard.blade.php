@@ -426,7 +426,7 @@
                 {{-- CSRF: protegge l'endpoint da attacchi cross-site request forgery --}}
                 <textarea name="rejection_reason" required minlength="20" maxlength="2000" rows="5"
                     placeholder="Es: La carta presenta segni di usura non dichiarati nel listing, condizione LP vs NM dichiarato. Bordi del fronte segnati con..."
-                    class="w-full bg-vault-surface border border-vault-border text-vault-text p-4 text-sm resize-none focus:outline-none focus:border-red-600 font-body"></textarea>
+                    class="w-full bg-vault-surface border border-vault-border text-vault-text p-4 text-sm resize-none focus:outline-none focus:border-red-600 font-body text-black"></textarea>
                 <p class="font-mono text-xs text-vault-muted mt-1 mb-6">Minimo 20 caratteri</p>
                 <div class="flex gap-3">
                     <button type="button" onclick="closeRejectModal()"
@@ -441,10 +441,7 @@
             </form>
         </div>
     </div>
-@endsection
-
-@push('scripts')
-    <script>
+     <script>
         function openRejectModal(transactionId) {
             const form = document.getElementById('rejectForm');
             // Imposta l'action del form con l'ID della transazione corretta
@@ -461,4 +458,8 @@
             if (e.target === this) closeRejectModal();
         });
     </script>
-@endpush
+@endsection
+
+
+   
+

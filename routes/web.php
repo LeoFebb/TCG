@@ -124,6 +124,7 @@ Route::get('/dashboard-utente', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], '/checkout/{card}', [EscrowController::class, 'checkout'])->name('checkout');
     Route::post('/checkout/{transaction}/update-shipping', [EscrowController::class, 'updateShipping'])->name('checkout.update-shipping');
+    Route::get('/checkout/{transaction}/success', [EscrowController::class, 'checkoutSuccess'])->name('checkout.success');
     Route::post('/trade/offer', [MarketplaceController::class, 'createTradeOffer'])->name('trade.offer');
     Route::post('/trade/{transaction}/confirm', [MarketplaceController::class, 'confirmTrade'])->name('trade.confirm');
     Route::post('/transaction/{transaction}/shipped', [MarketplaceController::class, 'markShipped'])->name('transaction.shipped');

@@ -54,21 +54,39 @@
                                     &#128230; In spedizione
                                 @elseif($t->status === 'completed')
                                     &#127381; Completata
+                                @elseif($t->status === 'disputed')
+                                    &#9888; Controversia
                                 @else
                                     &#9203; In attesa
                                 @endif
                             </span>
                         </div>
                     </div>
+                    @if ($t->validator_notes && str_starts_with($t->validator_notes, 'RIFIUTO:') && $t->type === 'sale')
+                        <div class="mt-4 p-3 rounded-lg border border-red-800/50" style="background: rgba(127,29,29,0.2);">
+                            <p class="text-red-400 text-xs font-bold mb-1">&#9888; Transazione rifiutata dal validatore</p>
+                            <p class="text-gray-300 text-xs">{{ str_replace('RIFIUTO: ', '', $t->validator_notes) }}</p>
+                        </div>
+                    @endif
                     @if ($t->type === 'trade' && $t->status !== 'pending')
                         <div class="mt-4 rounded-xl p-4 border border-blue-800/50"
                             style="background: rgba(59,130,246,0.05);">
                             <p class="text-blue-400 font-bold text-sm mb-2">&#128260; Permuta</p>
                             @if ($t->validator_notes)
-                                <p class="text-gray-400 text-xs mb-2">
-                                    Carta offerta: <span
-                                        class="text-white font-bold">{{ str_replace('Carta offerta: ', '', $t->validator_notes) }}</span>
-                                </p>
+                                @if (str_starts_with($t->validator_notes, 'RIFIUTO:'))
+                                    <div class="mt-2 p-3 rounded-lg border border-red-800/50"
+                                        style="background: rgba(127,29,29,0.2);">
+                                        <p class="text-red-400 text-xs font-bold mb-1">&#9888; Transazione rifiutata dal
+                                            validatore</p>
+                                        <p class="text-gray-300 text-xs">
+                                            {{ str_replace('RIFIUTO: ', '', $t->validator_notes) }}</p>
+                                    </div>
+                                @elseif(str_starts_with($t->validator_notes, 'Carta offerta:'))
+                                    <p class="text-gray-400 text-xs mb-2">
+                                        Carta offerta: <span
+                                            class="text-white font-bold">{{ str_replace('Carta offerta: ', '', $t->validator_notes) }}</span>
+                                    </p>
+                                @endif
                             @endif
                             <div class="flex flex-col gap-1">
                                 @if ($t->validator)
@@ -192,6 +210,51 @@
                     @endif
 
                 </div>
+                {{-- Pulsante etichetta venditore --}}
+                @if ($t->status === 'paid_escrow' && $t->seller_id === Auth::id())
+                    <div class="mt-4 rounded-xl p-4 border border-yellow-800/50"
+                        style="background: rgba(234,179,8,0.05);">
+                        <p class="text-yellow-400 font-bold text-sm mb-3">&#128230; Spedisci la carta al validatore</p>
+                        <div class="flex gap-3 flex-wrap">
+                            <a href="{{ route('shipping.label', $t) }}" target="_blank"
+                                class="px-4 py-2 rounded-lg text-sm font-bold text-white"
+                                style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                                &#128424; Scarica etichetta PDF
+                            </a>
+                            <form method="POST" action="{{ route('transaction.mark-shipped', $t) }}">
+                                @csrf
+                                <input type="text" name="tracking_number" placeholder="Tracking (opzionale)"
+                                    class="px-3 py-2 rounded-lg text-white text-sm border mr-2"
+                                    style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
+                                <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold text-white"
+                                    style="background: linear-gradient(135deg, #059669, #10b981);">
+                                    &#9989; Ho spedito
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+                @if ($t->status === 'shipping' && $t->buyer_id === Auth::id())
+                    <div class="mt-4 rounded-xl p-4 border border-green-800/50" style="background: rgba(6,78,59,0.1);">
+                        <p class="text-green-400 font-bold text-sm mb-3">&#128230; Carta in arrivo!</p>
+                        @if ($t->return_tracking_number)
+                            <div class="mb-3 p-3 rounded-lg border border-green-800/30"
+                                style="background: rgba(0,0,0,0.2);">
+                                <p class="text-gray-500 text-xs uppercase mb-1">Numero tracking</p>
+                                <p class="text-white font-mono font-bold">{{ $t->return_tracking_number }}</p>
+                            </div>
+                        @endif
+                        <p class="text-gray-400 text-xs mb-3">Quando ricevi la carta clicca il pulsante per confermare.
+                        </p>
+                        <form method="POST" action="{{ route('transaction.mark-completed', $t) }}">
+                            @csrf
+                            <button type="submit" class="px-6 py-3 rounded-xl font-bold text-white text-sm"
+                                style="background: linear-gradient(135deg, #059669, #10b981);">
+                                &#9989; Ho ricevuto la carta
+                            </button>
+                        </form>
+                    </div>
+                @endif
             @empty
                 <div class="rounded-xl p-10 text-center border border-purple-900/50"
                     style="background: rgba(45,17,84,0.1);">
@@ -201,6 +264,8 @@
                         + Pubblica una carta &#8594;
                     </a>
                 </div>
+
+
             @endforelse
         </div>
 
@@ -226,6 +291,15 @@
                                         class="text-purple-400 font-bold">&#8364;{{ number_format($t->amount + 11.8, 2) }}</span>
                                 </p>
                             </div>
+                            @if ($t->validator_notes && str_starts_with($t->validator_notes, 'RIFIUTO:'))
+                                <div class="mt-2 p-3 rounded-lg border border-red-800/50"
+                                    style="background: rgba(127,29,29,0.2);">
+                                    <p class="text-red-400 text-xs font-bold mb-1">&#9888; Transazione rifiutata dal
+                                        validatore</p>
+                                    <p class="text-gray-300 text-xs">
+                                        {{ str_replace('RIFIUTO: ', '', $t->validator_notes) }}</p>
+                                </div>
+                            @endif
                         </div>
                         <div class="flex flex-col gap-2 items-start md:items-end">
                             <span
@@ -282,52 +356,7 @@
                         </div>
                     </div>
 
-                    {{-- Pulsante etichetta venditore --}}
-                    @if ($t->status === 'paid_escrow' && $t->seller_id === Auth::id())
-                        <div class="mt-4 rounded-xl p-4 border border-yellow-800/50"
-                            style="background: rgba(234,179,8,0.05);">
-                            <p class="text-yellow-400 font-bold text-sm mb-3">&#128230; Spedisci la carta al validatore</p>
-                            <div class="flex gap-3 flex-wrap">
-                                <a href="{{ route('shipping.label', $t) }}" target="_blank"
-                                    class="px-4 py-2 rounded-lg text-sm font-bold text-white"
-                                    style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
-                                    &#128424; Scarica etichetta PDF
-                                </a>
-                                <form method="POST" action="{{ route('transaction.mark-shipped', $t) }}">
-                                    @csrf
-                                    <input type="text" name="tracking_number" placeholder="Tracking (opzionale)"
-                                        class="px-3 py-2 rounded-lg text-white text-sm border mr-2"
-                                        style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
-                                    <button type="submit" class="px-4 py-2 rounded-lg text-sm font-bold text-white"
-                                        style="background: linear-gradient(135deg, #059669, #10b981);">
-                                        &#9989; Ho spedito
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    @endif
-                    @if ($t->status === 'shipping' && $t->buyer_id === Auth::id())
-                        <div class="mt-4 rounded-xl p-4 border border-green-800/50"
-                            style="background: rgba(6,78,59,0.1);">
-                            <p class="text-green-400 font-bold text-sm mb-3">&#128230; Carta in arrivo!</p>
-                            @if ($t->return_tracking_number)
-                                <div class="mb-3 p-3 rounded-lg border border-green-800/30"
-                                    style="background: rgba(0,0,0,0.2);">
-                                    <p class="text-gray-500 text-xs uppercase mb-1">Numero tracking</p>
-                                    <p class="text-white font-mono font-bold">{{ $t->return_tracking_number }}</p>
-                                </div>
-                            @endif
-                            <p class="text-gray-400 text-xs mb-3">Quando ricevi la carta clicca il pulsante per confermare.
-                            </p>
-                            <form method="POST" action="{{ route('transaction.mark-completed', $t) }}">
-                                @csrf
-                                <button type="submit" class="px-6 py-3 rounded-xl font-bold text-white text-sm"
-                                    style="background: linear-gradient(135deg, #059669, #10b981);">
-                                    &#9989; Ho ricevuto la carta
-                                </button>
-                            </form>
-                        </div>
-                    @endif
+
 
                     {{-- Fondi in escrow --}}
                     @if ($t->status === 'in_validation' && $t->type === 'sale')

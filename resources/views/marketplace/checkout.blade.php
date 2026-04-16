@@ -368,7 +368,7 @@ const stripe = Stripe('{{ $stripePublicKey }}');
             } = await stripe.confirmPayment({
                 elements,
                 confirmParams: {
-                    return_url: '{{ route('transactions.index') }}',
+                    return_url: '{{ route('checkout.success', ['transaction' => $transaction->id]) }}',
                 },
             });
 
