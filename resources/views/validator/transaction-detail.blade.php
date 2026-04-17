@@ -39,46 +39,63 @@
                     @endif
                     Carta da validare
                 </p>
+                @php
+    $isAcquirenteValidator = $transaction->buyer_validator_id === Auth::user()->id;
+    $offeredName = $transaction->offered_card_name ?? str_replace('Carta offerta: ', '', $transaction->validator_notes ?? '');
+@endphp
 
-                @if ($transaction->card->images && count($transaction->card->images) > 0)
-                    <div class="grid grid-cols-2 gap-2 mb-4">
-                        @foreach ($transaction->card->images as $img)
-                            <img src="{{ str_starts_with($img, 'http') ? $img : Storage::url($img) }}"
-                                alt="{{ $transaction->card->name }}" class="w-full rounded-lg border border-purple-900/50">
-                        @endforeach
-                    </div>
-                @endif
-
-                <h2 class="text-white font-black text-xl mb-2">{{ $transaction->card->name }}</h2>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Set</span>
-                        <span class="text-white">{{ $transaction->card->set_name }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Numero</span>
-                        <span class="text-white">#{{ $transaction->card->card_number }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Categoria</span>
-                        <span class="text-white uppercase">{{ $transaction->card->tcg_category }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Rarità</span>
-                        <span class="text-white">{{ $transaction->card->rarity }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Condizione dichiarata</span>
-                        <span class="text-white font-bold">{{ $transaction->card->condition }}</span>
-                    </div>
-                </div>
-
-                @if ($transaction->card->description)
-                    <div class="mt-4 p-3 rounded-lg border border-purple-900/30" style="background: rgba(0,0,0,0.2);">
-                        <p class="text-gray-500 text-xs uppercase mb-1">Note venditore</p>
-                        <p class="text-gray-300 text-sm">{{ $transaction->card->description }}</p>
-                    </div>
-                @endif
+@if($transaction->type === 'trade' && $isAcquirenteValidator)
+    @if($transaction->offered_card_image)
+        <img src="{{ Storage::url($transaction->offered_card_image) }}"
+             alt="{{ $offeredName }}"
+             class="w-full rounded-lg border border-purple-900/50 mb-4">
+    @endif
+    <h2 class="text-white font-black text-xl mb-2">{{ $offeredName }}</h2>
+    <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+            <span class="text-gray-500">Tipo</span>
+            <span class="text-white">Carta offerta in permuta</span>
+        </div>
+    </div>
+@else
+    @if ($transaction->card->images && count($transaction->card->images) > 0)
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            @foreach ($transaction->card->images as $img)
+                <img src="{{ str_starts_with($img, 'http') ? $img : Storage::url($img) }}"
+                    alt="{{ $transaction->card->name }}" class="w-full rounded-lg border border-purple-900/50">
+            @endforeach
+        </div>
+    @endif
+    <h2 class="text-white font-black text-xl mb-2">{{ $transaction->card->name }}</h2>
+    <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+            <span class="text-gray-500">Set</span>
+            <span class="text-white">{{ $transaction->card->set_name }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500">Numero</span>
+            <span class="text-white">#{{ $transaction->card->card_number }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500">Categoria</span>
+            <span class="text-white uppercase">{{ $transaction->card->tcg_category }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500">Rarità</span>
+            <span class="text-white">{{ $transaction->card->rarity }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-500">Condizione dichiarata</span>
+            <span class="text-white font-bold">{{ $transaction->card->condition }}</span>
+        </div>
+    </div>
+    @if ($transaction->card->description)
+        <div class="mt-4 p-3 rounded-lg border border-purple-900/30" style="background: rgba(0,0,0,0.2);">
+            <p class="text-gray-500 text-xs uppercase mb-1">Note venditore</p>
+            <p class="text-gray-300 text-sm">{{ $transaction->card->description }}</p>
+        </div>
+    @endif
+@endif
             </div>
 
             {{-- Info transazione --}}

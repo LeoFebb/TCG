@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    protected $fillable = ['buyer_id', 'seller_id', 'card_id', 'offered_card_id', 'validator_id', 'type', 'status', 'amount', 'platform_fee', 'shipping_cost', 'shipping_name', 'shipping_address', 'shipping_city', 'shipping_zip', 'shipping_country', 'shipping_phone', 'label_generated_at', 'stripe_intent_id', 'stripe_transfer_id', 'escrow_paid_at', 'funds_released_at', 'buyer_shipped', 'seller_shipped', 'validator_notes', 'validated_at', 'tracking_number', 'return_tracking_number', 'buyer_validator_id', 'validator_received','offered_card_image','checkout_expires_at' => 'datetime', "offered_card_name",];
+    protected $fillable = ['buyer_id', 'seller_id', 'card_id', 'offered_card_id', 'validator_id', 'type', 'status', 'amount', 'platform_fee', 'shipping_cost', 'shipping_name', 'shipping_address', 'shipping_city', 'shipping_zip', 'shipping_country', 'shipping_phone', 'label_generated_at', 'stripe_intent_id', 'stripe_transfer_id', 'escrow_paid_at', 'funds_released_at', 'buyer_shipped', 'seller_shipped', 'validator_notes', 'validated_at', 'tracking_number', 'return_tracking_number', 'buyer_validator_id', 'validator_received','offered_card_image','checkout_expires_at' => 'datetime', "offered_card_name", "buyer_validator_received", "seller_validated", "buyer_validated", "buyer_shipped", "seller_shipped", "validator_shipped", "buyer_validator_shipped", "buyer_tracking_number",];
 
     protected $casts = [
         'amount' => 'decimal:2',
@@ -52,7 +52,7 @@ class Transaction extends Model
         if ($this->type === 'trade') {
             return in_array($this->status, ['in_validation', 'accepted', 'pending']) && ($this->seller_shipped || $this->buyer_shipped);
         }
-        return $this->status === 'in_validation';
+        return in_array($this->status, ['in_validation', 'paid_escrow']);
     }
 
     public function isValidated(): bool

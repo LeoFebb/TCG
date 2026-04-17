@@ -35,7 +35,7 @@ class TransactionController extends Controller
             } else {
                 $transaction->update([
                     'buyer_shipped' => true,
-                    'return_tracking_number' => $request->tracking_number,
+                    'buyer_tracking_number' => $request->buyer_tracking_number,
                 ]);
             }
 

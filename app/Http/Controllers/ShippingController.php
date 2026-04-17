@@ -123,7 +123,7 @@ class ShippingController extends Controller
             'generated_at' => now('Europe/Rome')->format('d/m/Y H:i'),
             'tracking_code' => 'TCG-' . str_pad($transaction->id, 6, '0', STR_PAD_LEFT) . '-R',
             'is_return' => true,
-            'offered_card_name' => $transaction->buyer_validator_id === Auth::id() && $transaction->type === 'trade' ? $transaction->offered_card_name : null,
+            'offered_card_name' => $transaction->buyer_validator_id === Auth::id() && $transaction->type === 'trade' ? $transaction->offered_card_name ?? str_replace('Carta offerta: ', '', $transaction->validator_notes ?? '') : null,
         ];
 
         $pdf = Pdf::loadView('shipping.label', $data)->setPaper([0, 0, 419, 298], 'portrait');

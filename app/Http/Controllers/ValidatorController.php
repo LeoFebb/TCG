@@ -46,17 +46,20 @@ class ValidatorController extends Controller
             ->where(function ($q) {
                 $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
             })
-            ->whereIn('status', ['validated', 'shipping', 'completed'])
+            ->whereIn('status', ['validated', 'shipping', 'completed', 'disputed'])
             ->latest()
             ->take(10)
             ->get();
 
         $stats = [
-            'pending' => $pendingTasks->total(),
-            'validated' => Transaction::where('validator_id', Auth::id())
-                ->whereIn('status', ['validated', 'shipping'])
-                ->count(),
-            'completed' => Transaction::where('validator_id', Auth::id())->where('status', 'completed')->count(),
+            
+    'pending' => $pendingTasks->total(),
+    'validated' => Transaction::where(function($q) {
+        $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
+    })->whereIn('status', ['validated', 'shipping'])->count(),
+    'completed' => Transaction::where(function($q) {
+    $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
+})->whereIn('status', ['completed', 'disputed'])->count(),
         ];
 
         return view('validator.dashboard', compact('pendingTasks', 'completedTasks', 'stats'));
@@ -99,39 +102,42 @@ class ValidatorController extends Controller
         abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403);
         abort_if(!in_array($transaction->status, ['in_validation', 'accepted', 'pending']), 422, 'Questa transazione non è in attesa di validazione.');
         DB::transaction(function () use ($transaction, $validated) {
-            // Per le PERMUTE: verifica che entrambi abbiano spedito le carte
             if ($transaction->type === 'trade') {
-                if ($transaction->type === 'trade') {
-                    // Per le permute ogni validatore approva solo la sua carta
-                    // Non serve che entrambi abbiano spedito
+                // Per le permute ogni validatore approva solo la sua carta
+                if ($transaction->buyer_validator_id === Auth::id()) {
+                    $transaction->update(['buyer_validated' => true]);
+                } else {
+                    $transaction->update(['seller_validated' => true]);
                 }
-            }
-
-            // Aggiorna la transazione come validata
-            $transaction->update([
-                'status' => 'validated',
-                'validated_at' => now(),
-                'validator_notes' => $validated['validator_notes'] ?? null,
-            ]);
-
-            Log::info('Transaction validated', [
-                'transaction_id' => $transaction->id,
-                'validator_id' => Auth::id(),
-                'type' => $transaction->type,
-            ]);
-
-            // Marca la carta come validata
-            $transaction->card->update(['is_validated' => true]);
-
-            // Per le VENDITE: rilascia i fondi al venditore
-            // Per le PERMUTE: non ci sono fondi da rilasciare
-            if ($transaction->type === 'sale') {
+                $transaction->refresh();
+                // Solo quando entrambi approvano → shipping
+                if ($transaction->seller_validated && $transaction->buyer_validated) {
+                    $transaction->update([
+                        'status' => 'shipping',
+                        'validated_at' => now(),
+                    ]);
+                    $transaction->card->update(['is_validated' => true]);
+                }
+                Log::info('Transaction validated', [
+                    'transaction_id' => $transaction->id,
+                    'validator_id' => Auth::id(),
+                    'type' => $transaction->type,
+                ]);
+            } else {
+                // Per le VENDITE
+                $transaction->update([
+                    'status' => 'validated',
+                    'validated_at' => now(),
+                    'validator_notes' => $validated['validator_notes'] ?? null,
+                ]);
+                Log::info('Transaction validated', [
+                    'transaction_id' => $transaction->id,
+                    'validator_id' => Auth::id(),
+                    'type' => $transaction->type,
+                ]);
+                $transaction->card->update(['is_validated' => true]);
                 $this->escrowController->releaseFunds($transaction);
                 $transaction->refresh();
-            } else {
-                // Per le permute non ci sono fondi da sbloccare
-                // Ognuno ha pagato la propria spedizione
-                $transaction->update(['status' => 'shipping']);
             }
         });
 
@@ -154,8 +160,8 @@ class ValidatorController extends Controller
             'rejection_reason' => 'required|string|min:20|max:2000',
         ]);
 
-        abort_if($transaction->validator_id !== Auth::id(), 403);
-        abort_if(!in_array($transaction->status, ['in_validation', 'paid_escrow']), 422);
+        abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403);
+        abort_if(!in_array($transaction->status, ['in_validation', 'paid_escrow', 'accepted', 'pending', 'shipping']), 422);
 
         DB::transaction(function () use ($transaction, $validated) {
             $transaction->update([
@@ -185,20 +191,24 @@ class ValidatorController extends Controller
      */
     public function confirmReceived(Request $request, Transaction $transaction)
     {
-        $validated = $request->validate([
-            'party' => 'required|in:buyer,seller',
-        ]);
+        abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403);
 
-        abort_if($transaction->validator_id !== Auth::id(), 403);
-        abort_if($transaction->type !== 'trade', 422);
-
-        $field = $validated['party'] === 'buyer' ? 'buyer_shipped' : 'seller_shipped';
-        $transaction->update([$field => true]);
-
-        // Se entrambe le carte sono arrivate, aggiorna lo stato
-        $transaction->refresh();
-        if ($transaction->buyer_shipped && $transaction->seller_shipped) {
-            $transaction->update(['status' => 'in_validation']);
+        if ($transaction->type === 'trade') {
+            // Per le permute: ogni validatore conferma la propria ricezione
+            if ($transaction->buyer_validator_id === Auth::id()) {
+                $transaction->update(['buyer_validator_received' => true]);
+            } else {
+                $transaction->update(['validator_received' => true]);
+            }
+            // Se entrambi hanno ricevuto, aggiorna lo stato
+            $transaction->refresh();
+            if ($transaction->validator_received && $transaction->buyer_validator_received) {
+                $transaction->update(['status' => 'in_validation']);
+            }
+        } else {
+            // Per le vendite: solo il validatore del venditore
+            abort_if($transaction->validator_id !== Auth::id(), 403);
+            $transaction->update(['validator_received' => true, 'status' => 'in_validation']);
         }
 
         return back()->with('success', 'Ricezione carta confermata.');
@@ -206,20 +216,37 @@ class ValidatorController extends Controller
 
     public function markShipped(Request $request, Transaction $transaction)
     {
-        \Illuminate\Support\Facades\Log::info('markShipped called', [
-            'transaction_id' => $transaction->id,
-            'transaction_status' => $transaction->status,
-            'validator_id' => $transaction->validator_id,
-            'auth_id' => Auth::id(),
-        ]);
+        abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403);
+        abort_if(!in_array($transaction->status, ['validated', 'shipping']), 422);
 
-        abort_if($transaction->validator_id !== Auth::id(), 403);
-        abort_if($transaction->status !== 'validated', 422);
+        if ($transaction->buyer_validator_id === Auth::id()) {
+            $transaction->update([
+                'buyer_validator_shipped' => true,
+                'return_tracking_number' => $request->return_tracking_number,
+            ]);
+        }
 
+        if ($transaction->type === 'trade') {
+    if ($transaction->buyer_validator_id === Auth::id()) {
         $transaction->update([
+            'buyer_validator_shipped' => true,
             'return_tracking_number' => $request->return_tracking_number,
-            'status' => 'shipping',
+            'status' => 'completed',
         ]);
+    } else {
+        $transaction->update([
+            'validator_shipped' => true,
+            'return_tracking_number' => $request->return_tracking_number,
+            'status' => 'completed',
+        ]);
+    }
+} else {
+    $transaction->update([
+        'return_tracking_number' => $request->return_tracking_number,
+        'status' => 'shipping',
+    ]);
+}
+           
 
         return redirect()->back()->with('success', 'Spedizione confermata!');
     }
@@ -228,22 +255,31 @@ class ValidatorController extends Controller
     {
         abort_if($transaction->validator_id !== Auth::id() && $transaction->buyer_validator_id !== Auth::id(), 403);
 
-        if ($transaction->validator_id === Auth::id()) {
+        if ($transaction->type === 'trade') {
+            if ($transaction->buyer_validator_id === Auth::id()) {
+                $transaction->update([
+                    'buyer_validator_received' => true,
+                    'buyer_shipped' => true,
+                ]);
+            } else {
+                $transaction->update([
+                    'validator_received' => true,
+                    'seller_shipped' => true,
+                ]);
+            }
+            // Se entrambi hanno ricevuto → in_validation
+            $transaction->refresh();
+            if ($transaction->validator_received && $transaction->buyer_validator_received) {
+                $transaction->update(['status' => 'in_validation']);
+            }
+        } else {
+            // Vendita: solo validatore del venditore
+            abort_if($transaction->validator_id !== Auth::id(), 403);
             $transaction->update([
                 'validator_received' => true,
                 'seller_shipped' => true,
+                'status' => 'in_validation',
             ]);
-        } else {
-            $transaction->update([
-                'validator_received' => true,
-                'buyer_shipped' => true,
-            ]);
-        }
-
-        // Se entrambi hanno ricevuto → in_validation
-        $transaction->refresh();
-        if ($transaction->seller_shipped && $transaction->buyer_shipped) {
-            $transaction->update(['status' => 'in_validation']);
         }
 
         return redirect()->back()->with('success', 'Carta ricevuta confermata!');

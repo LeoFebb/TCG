@@ -159,7 +159,7 @@
                                         <form method="POST" action="{{ route('transaction.mark-shipped', $t) }}"
                                             class="flex gap-2">
                                             @csrf
-                                            <input type="text" name="tracking_number"
+                                            <input type="text" name="buyer_tracking_number"
                                                 placeholder="Numero tracking (opzionale)"
                                                 class="flex-1 px-4 py-2 rounded-lg text-white text-sm border"
                                                 style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
@@ -234,7 +234,7 @@
                         </div>
                     </div>
                 @endif
-                @if ($t->status === 'shipping' && $t->buyer_id === Auth::id())
+                @if (in_array($t->status, ['shipping', 'completed']) && $t->buyer_id === Auth::id())
                     <div class="mt-4 rounded-xl p-4 border border-green-800/50" style="background: rgba(6,78,59,0.1);">
                         <p class="text-green-400 font-bold text-sm mb-3">&#128230; Carta in arrivo!</p>
                         @if ($t->return_tracking_number)
@@ -310,7 +310,7 @@
                             @elseif($t->status === 'shipping') bg-blue-900/50 text-blue-400 border border-blue-800
                             @else bg-gray-900/50 text-gray-400 border border-gray-800 @endif">
 
-                                @if (($t->status === 'accepted' || $t->status === 'pending') && $t->type === 'trade' && $t->buyer_id === Auth::id())
+                                @if ($t->status === 'accepted' && $t->type === 'trade' && $t->buyer_id === Auth::id())
                                     <div class="mt-4 rounded-xl p-5 border border-blue-800/50"
                                         style="background: rgba(59,130,246,0.05);">
                                         <p class="text-blue-400 font-bold text-sm mb-1">&#128260; Permuta accettata!</p>
@@ -370,6 +370,25 @@
                             </p>
                         </div>
                     @endif
+                    @if (in_array($t->status, ['shipping', 'completed']) && $t->buyer_id === Auth::id())
+    <div class="mt-4 rounded-xl p-4 border border-green-800/50" style="background: rgba(6,78,59,0.1);">
+        <p class="text-green-400 font-bold text-sm mb-3">&#128230; Carta in arrivo!</p>
+        @if ($t->return_tracking_number)
+            <div class="mb-3 p-3 rounded-lg border border-green-800/30" style="background: rgba(0,0,0,0.2);">
+                <p class="text-gray-500 text-xs uppercase mb-1">Numero tracking</p>
+                <p class="text-white font-mono font-bold">{{ $t->return_tracking_number }}</p>
+            </div>
+        @endif
+        <p class="text-gray-400 text-xs mb-3">Quando ricevi la carta clicca il pulsante per confermare.</p>
+        <form method="POST" action="{{ route('transaction.mark-completed', $t) }}">
+            @csrf
+            <button type="submit" class="px-6 py-3 rounded-xl font-bold text-white text-sm"
+                style="background: linear-gradient(135deg, #059669, #10b981);">
+                &#9989; Ho ricevuto la carta
+            </button>
+        </form>
+    </div>
+@endif
 
                     {{-- Progress bar --}}
                     @php

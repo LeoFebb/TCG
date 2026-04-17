@@ -239,8 +239,10 @@
                 </div>
                 <div style="text-align: center;">
                     <div class="badge"> CERTIFICATA TCG VAULT</div>
-                    <div style="font-size: 7px; color: #888; margin-top: 2px;">Rarita: {{ $transaction->card->rarity }}
-                    </div>
+                    @if (!isset($offered_card_name) || !$offered_card_name)
+                        <div style="font-size: 7px; color: #888; margin-top: 2px;">Rarita:
+                            {{ $transaction->card->rarity }}</div>
+                    @endif
                 </div>
             </div>
 
