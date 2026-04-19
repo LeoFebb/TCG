@@ -270,9 +270,17 @@ class ValidatorController extends Controller
             // Se entrambi hanno ricevuto → in_validation
             $transaction->refresh();
             if ($transaction->validator_received && $transaction->buyer_validator_received) {
-                $transaction->update(['status' => 'in_validation']);
-            }
-        } else {
+    $transaction->update(['status' => 'in_validation']);
+    
+    // Apri chat solo se i due validatori sono diversi
+    if ($transaction->validator_id !== $transaction->buyer_validator_id) {
+        \App\Models\ChatRoom::firstOrCreate([
+            'transaction_id' => $transaction->id,
+            'user_1_id' => $transaction->validator_id,
+            'user_2_id' => $transaction->buyer_validator_id,
+        ]);
+    }
+} else {
             // Vendita: solo validatore del venditore
             abort_if($transaction->validator_id !== Auth::id(), 403);
             $transaction->update([
@@ -281,7 +289,10 @@ class ValidatorController extends Controller
                 'status' => 'in_validation',
             ]);
         }
+        
 
         return redirect()->back()->with('success', 'Carta ricevuta confermata!');
     }
+    
+}
 }

@@ -13,6 +13,13 @@ use App\Http\Controllers\MyCardsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\ChatController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{room}', [ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{room}/send', [ChatController::class, 'send'])->name('chat.send');
+});
 
 // Etichette spedizione
 Route::get('/transaction/{transaction}/label', [ShippingController::class, 'generateLabel'])->name('shipping.label');

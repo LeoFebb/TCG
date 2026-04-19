@@ -198,6 +198,19 @@
                     <a href="{{ route('validator.profile.edit') }}"
                         class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
                         &#128100; Il mio profilo
+                        @if(auth()->user()->role === 'validator')
+<a href="{{ route('chat.index') }}"
+    class="relative flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+    &#128172; Chat
+    @php $unreadCount = auth()->user()->unreadNotifications->where('type', 'App\Notifications\NewChatMessage')->count(); @endphp
+    @if($unreadCount > 0)
+        <span class="w-4 h-4 rounded-full text-white flex items-center justify-center font-bold"
+              style="background: #ef4444; font-size: 9px;">
+            {{ $unreadCount }}
+        </span>
+    @endif
+</a>
+@endif
                     </a>
                 </nav>
             @else
@@ -349,16 +362,16 @@
             }
         </script>
         @stack('scripts')
-    <script>
-        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-            const menu = document.getElementById('mobile-menu');
-            const hamburger = document.getElementById('hamburger-icon');
-            const close = document.getElementById('close-icon');
-            menu.classList.toggle('hidden');
-            hamburger.classList.toggle('hidden');
-            close.classList.toggle('hidden');
-        });
-    </script>
+        <script>
+            document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+                const menu = document.getElementById('mobile-menu');
+                const hamburger = document.getElementById('hamburger-icon');
+                const close = document.getElementById('close-icon');
+                menu.classList.toggle('hidden');
+                hamburger.classList.toggle('hidden');
+                close.classList.toggle('hidden');
+            });
+        </script>
     @endpush
 </body>
 

@@ -127,7 +127,7 @@
                                         <span class="text-vault-text">{{ $transaction->buyer->name }}</span>
                                     </div>
                                 </div>
-
+                               
                                 {{-- Stato ricezione (solo permute) --}}
                                 @php
                                     $trackingToShow =
@@ -222,7 +222,25 @@
                     </button>
                 </form>
             @endif
-
+                {{-- Box chat automatica --}}
+@php
+    $chatRoom = $hasReceived && $transaction->validator_id !== $transaction->buyer_validator_id
+        ? \App\Models\ChatRoom::where('transaction_id', $transaction->id)->first()
+        : null;
+@endphp
+@if($chatRoom)
+    <a href="{{ route('chat.show', $chatRoom) }}"
+       class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-blue-800/50 mb-3"
+       style="background: rgba(59,130,246,0.08);">
+        <span style="font-size:16px">💬</span>
+        <div>
+            <p class="text-blue-400 font-bold text-sm">Chat con l'altro validatore</p>
+            @php $other = $chatRoom->user_1_id === Auth::id() ? $chatRoom->user2 : $chatRoom->user1; @endphp
+            <p class="text-gray-500 text-xs">Coordinati con {{ $other->name }} prima di approvare</p>
+        </div>
+        <span class="ml-auto text-blue-400 text-sm">→</span>
+    </a>
+@endif
             <div id="actions-{{ $transaction->id }}" class="{{ !$hasReceived ? 'hidden' : '' }} flex flex-wrap gap-2">
 
                 @php
