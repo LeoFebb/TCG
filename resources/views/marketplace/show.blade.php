@@ -91,7 +91,65 @@
                         <p class="text-gray-300 text-sm leading-relaxed">{{ $card->description }}</p>
                     </div>
                 @endif
-
+                    {{-- Grafico andamento prezzi --}}
+@php
+    $priceHistory = \App\Models\Transaction::where('card_id', $card->id)
+        ->orWhereHas('card', fn($q) => $q->where('name', $card->name))
+        ->where('status', 'completed')
+        ->orderBy('created_at', 'asc')
+        ->get(['amount', 'created_at'])
+        ->map(fn($t) => ['price' => (float)$t->amount, 'date' => $t->created_at->format('d/m/Y')])
+        ->values();
+@endphp
+@if($priceHistory->count() > 1)
+<div class="mb-6 p-4 rounded-xl border border-purple-900/50" style="background: rgba(0,0,0,0.2);">
+    <p class="text-gray-500 text-xs uppercase mb-3">Andamento prezzi</p>
+    <div style="position:relative;height:180px">
+        <canvas id="priceChart" role="img" aria-label="Andamento storico del prezzo di {{ $card->name }}"></canvas>
+    </div>
+    <div class="flex justify-between mt-2">
+        <span class="text-gray-600 text-xs">Min: <span class="text-white">€{{ number_format($priceHistory->min('price'), 2) }}</span></span>
+        <span class="text-gray-600 text-xs">Max: <span class="text-white">€{{ number_format($priceHistory->max('price'), 2) }}</span></span>
+        <span class="text-gray-600 text-xs">Transazioni: <span class="text-white">{{ $priceHistory->count() }}</span></span>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    new Chart(document.getElementById('priceChart'), {
+        type: 'line',
+        data: {
+            labels: {!! $priceHistory->pluck('date')->toJson() !!},
+            datasets: [{
+                label: 'Prezzo vendita',
+                data: {!! $priceHistory->pluck('price')->toJson() !!},
+                borderColor: '#a855f7',
+                backgroundColor: 'rgba(124,58,237,0.08)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#a855f7',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => '€' + ctx.parsed.y.toFixed(2) } }
+            },
+            scales: {
+                x: { ticks: { font: { size: 10 }, color: '#6b7280' }, grid: { color: 'rgba(124,58,237,0.07)' } },
+                y: { ticks: { font: { size: 10 }, color: '#6b7280', callback: v => '€' + v }, grid: { color: 'rgba(124,58,237,0.07)' } }
+            }
+        }
+    });
+});
+</script>
+@endif
                 <div class="border-t border-purple-900/50 pt-6 mb-6">
 
                     @if ($card->price)
