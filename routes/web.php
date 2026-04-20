@@ -149,6 +149,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/shipping-debt/success', [EscrowController::class, 'shippingDebtSuccess'])->name('shipping.debt.success');
 });
 
+Route::get('/dismiss-debt-modal', function() {
+    session(['debt_modal_dismissed' => true]);
+    return redirect()->back();
+})->name('dismiss.debt.modal')->middleware('auth');
+
+Route::post('/dismiss-debt-modal', function(\Illuminate\Http\Request $request) {
+    session(['debt_modal_dismissed' => true]);
+    return redirect($request->input('redirect', '/'));
+})->name('dismiss.debt.modal')->middleware('auth');
+
 // Webhook Stripe
 Route::post('/stripe/webhook', [EscrowController::class, 'handleWebhook'])->name('stripe.webhook');
 

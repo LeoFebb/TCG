@@ -32,7 +32,13 @@
 
             @csrf
             {{-- CSRF: obbligatorio. Il form è su endpoint rate-limited (5 req/15min per IP) --}}
-
+            @auth
+                <div class="border border-green-800/50 p-5 mb-8 rounded-xl" style="background: rgba(6,78,59,0.15);">
+                    <p class="text-green-400 font-bold text-sm mb-1">✅ Sei già registrato come {{ auth()->user()->name }}</p>
+                    <p class="text-gray-400 text-xs">Completa solo le informazioni aggiuntive per diventare validatore. I tuoi
+                        dati di accesso rimangono invariati.</p>
+                </div>
+            @endauth
             @if ($errors->any())
                 <div class="border border-red-800/50 bg-red-950/30 p-5 mb-8">
                     <p class="font-mono text-xs text-red-400 uppercase tracking-widest mb-3">Correggi gli errori</p>
@@ -47,65 +53,71 @@
             @endif
 
             {{-- ── SEZIONE 1: Dati personali ── --}}
-            <div class="border border-vault-border bg-vault-card p-8 mb-6">
-                <p class="font-mono text-xs text-vault-gold uppercase tracking-widest mb-6">01 · Dati personali</p>
+            @guest
+                <div class="border border-vault-border bg-vault-card p-8 mb-6">
+                    <p class="font-mono text-xs text-vault-gold uppercase tracking-widest mb-6">01 · Dati personali</p>
 
-                <div class="grid grid-cols-1 gap-5">
-                    {{-- Nome --}}
-                    <div>
-                        <label for="name"
-                            class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">
-                            Nome completo *
-                        </label>
-                        <input type="text" id="name" name="name" required value="{{ old('name') }}"
-                            placeholder="Mario Rossi"
-                            class="w-full bg-vault-surface border @error('name') border-red-600 @else border-vault-border @enderror text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
-                        @error('name')
-                            <p class="font-mono text-xs text-red-400 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <div class="grid grid-cols-1 gap-5">
 
-                    {{-- Email --}}
-                    <div>
-                        <label for="email"
-                            class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">
-                            Indirizzo email *
-                        </label>
-                        <input type="email" id="email" name="email" required value="{{ old('email') }}"
-                            placeholder="mario@esempio.it"
-                            class="w-full bg-vault-surface border @error('email') border-red-600 @else border-vault-border @enderror text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
-                        @error('email')
-                            <p class="font-mono text-xs text-red-400 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                        {{-- Nome --}}
 
-                    {{-- Password --}}
-                    <div>
-                        <label for="password"
-                            class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">
-                            Password * <span class="normal-case text-vault-muted/60">(min. 12 caratteri, maiusc., numeri,
-                                simboli)</span>
-                        </label>
-                        <input type="password" id="password" name="password" required autocomplete="new-password"
-                            class="w-full bg-vault-surface border @error('password') border-red-600 @else border-vault-border @enderror text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
-                        @error('password')
-                            <p class="font-mono text-xs text-red-400 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                        <div>
+                            <label for="name"
+                                class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">
+                                Nome completo *
+                            </label>
+                            <input type="text" id="name" name="name" required value="{{ old('name') }}"
+                                placeholder="Mario Rossi"
+                                class="w-full bg-vault-surface border @error('name') border-red-600 @else border-vault-border @enderror text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                            @error('name')
+                                <p class="font-mono text-xs text-red-400 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    {{-- Conferma Password --}}
-                    <div>
-                        <label for="password_confirmation"
-                            class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">
-                            Conferma password *
-                        </label>
-                        <input type="password" id="password_confirmation" name="password_confirmation" required
-                            autocomplete="new-password"
-                            class="w-full bg-vault-surface border border-vault-border text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                        {{-- Email --}}
+
+                        <div>
+                            <label for="email"
+                                class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">
+                                Indirizzo email *
+                            </label>
+                            <input type="email" id="email" name="email" required value="{{ old('email') }}"
+                                placeholder="mario@esempio.it"
+                                class="w-full bg-vault-surface border @error('email') border-red-600 @else border-vault-border @enderror text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                            @error('email')
+                                <p class="font-mono text-xs text-red-400 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Password --}}
+
+                        <div>
+                            <label for="password"
+                                class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">
+                                Password * <span class="normal-case text-vault-muted/60">(min. 12 caratteri, maiusc., numeri,
+                                    simboli)</span>
+                            </label>
+                            <input type="password" id="password" name="password" required autocomplete="new-password"
+                                class="w-full bg-vault-surface border @error('password') border-red-600 @else border-vault-border @enderror text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                            @error('password')
+                                <p class="font-mono text-xs text-red-400 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        {{-- Conferma Password --}}
+
+                        <div>
+                            <label for="password_confirmation"
+                                class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">
+                                Conferma password *
+                            </label>
+                            <input type="password" id="password_confirmation" name="password_confirmation" required
+                                autocomplete="new-password"
+                                class="w-full bg-vault-surface border border-vault-border text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                        </div>
                     </div>
                 </div>
-            </div>
-
+            @endguest
             {{-- ── SEZIONE 2: Documento d'identità ── --}}
             <div class="border border-vault-border bg-vault-card p-8 mb-6">
                 <p class="font-mono text-xs text-vault-gold uppercase tracking-widest mb-2">02 · Documento d'identità</p>
@@ -191,7 +203,7 @@
                     </label>
                     <textarea id="expertise_notes" name="expertise_notes" rows="3" maxlength="2000"
                         placeholder="Es: Ho 10 anni di esperienza con MTG, specializzato in carte Alpha/Beta. Arbitro certificato Level 2..."
-                        class="w-full bg-vault-surface border border-vault-border text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body resize-none">{{ old('expertise_notes') }}</textarea>
+                        class="w-full bg-vault-surface border border-vault-border text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body resize-none">{{ old('expertise_notes') }}</textarea>
                 </div>
             </div>
 
@@ -207,7 +219,7 @@
                             *</label>
                         <input type="text" name="address" required value="{{ old('address') }}"
                             placeholder="Via Roma 1"
-                            class="w-full bg-vault-surface border border-vault-border text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                            class="w-full bg-vault-surface border border-vault-border text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
@@ -215,14 +227,14 @@
                                 *</label>
                             <input type="text" name="city" required value="{{ old('city') }}"
                                 placeholder="Milano"
-                                class="w-full bg-vault-surface border border-vault-border text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                                class="w-full bg-vault-surface border border-vault-border text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
                         </div>
                         <div>
                             <label class="font-mono text-xs text-vault-muted uppercase tracking-widest block mb-2">CAP
                                 *</label>
                             <input type="text" name="zip" required value="{{ old('zip') }}"
                                 placeholder="20100"
-                                class="w-full bg-vault-surface border border-vault-border text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                                class="w-full bg-vault-surface border border-vault-border text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
                         </div>
                     </div>
                     <div>
@@ -230,7 +242,7 @@
                             *</label>
                         <input type="text" name="phone" required value="{{ old('phone') }}"
                             placeholder="+39 333 1234567"
-                            class="w-full bg-vault-surface border border-vault-border text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                            class="w-full bg-vault-surface border border-vault-border text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
                     </div>
                 </div>
                 <div>
@@ -238,7 +250,7 @@
                         *</label>
                     <input type="text" name="vat_number" required value="{{ old('vat_number') }}"
                         placeholder="IT12345678901"
-                        class="w-full bg-vault-surface border border-vault-border text-vault-text px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
+                        class="w-full bg-vault-surface border border-vault-border text-black px-4 py-3 text-sm focus:outline-none focus:border-vault-gold transition-colors font-body">
                     @error('vat_number')
                         <p class="font-mono text-xs text-red-400 mt-1">{{ $message }}</p>
                     @enderror

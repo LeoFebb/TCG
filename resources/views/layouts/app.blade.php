@@ -306,6 +306,37 @@
     @endif
 
     <main class="max-w-7xl mx-auto px-6 py-8">
+      @if(auth()->check() && auth()->user()->has_shipping_debt && !session('debt_modal_dismissed'))
+<div style="min-height:100vh;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:20px;position:absolute;top:0;left:0;right:0;bottom:0;z-index:9999">
+    <div class="rounded-2xl border border-red-800/50 p-10 text-center max-w-lg w-full" style="background:#0d0d1a">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <h2 class="text-2xl font-black text-white mb-3">Account sospeso</h2>
+        <p class="text-gray-400 mb-2">
+            Una tua transazione è stata rifiutata dal validatore.<br>
+            Hai un debito di spedizione di
+        </p>
+        <p class="text-red-400 font-black text-4xl mb-4">€{{ number_format(auth()->user()->shipping_debt_amount, 2) }}</p>
+        <p class="text-gray-500 text-sm mb-8">
+            Non puoi pubblicare carte o effettuare acquisti finché non saldi il debito.
+        </p>
+        <div class="flex flex-col gap-3">
+            <form method="POST" action="{{ route('dismiss.debt.modal') }}">
+    @csrf
+    <input type="hidden" name="redirect" value="{{ route('shipping.debt.pay') }}">
+    <button type="submit"
+        class="block w-full py-4 rounded-xl font-black text-black text-base"
+        style="background: linear-gradient(135deg, #c9a84c, #e8c97e);">
+        Paga €{{ number_format(auth()->user()->shipping_debt_amount, 2) }} ora
+    </button>
+</form>
+            <a href="{{ route('dismiss.debt.modal') }}"
+   class="block w-full py-3 rounded-xl font-bold text-gray-400 text-sm border border-purple-900/50">
+    Continua a sfogliare il marketplace
+</a>
+        </div>
+    </div>
+</div>
+@endif
         @yield('content')
     </main>
 

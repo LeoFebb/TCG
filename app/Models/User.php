@@ -19,6 +19,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'is_verified_validator' => 'boolean',
         'password' => 'hashed',
+        'tcg_categories' => 'array',
     ];
 
     public function getTcgCategoriesAttribute($value)

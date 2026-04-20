@@ -24,27 +24,37 @@ class ValidatorRegisterController extends Controller
     }
 
     public function register(ValidatorRegistrationRequest $request)
-    {
-        // Salva il documento d'identità in storage privato (non accessibile pubblicamente)
-        // Il nome del file include un hash per prevenire enumeration attacks
-        $documentPath = $request->file('identity_document')->store(
-            'validator-documents',
-            'private', // Disco 'private' configurato in config/filesystems.php
-        );
+{
+    $documentPath = $request->file('identity_document')->store(
+        'validator-documents',
+        'private',
+    );
 
-        // Crea l'utente con ruolo validator ma NON verificato
-        // L'admin dovrà approvare manualmente la candidatura
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+    if (auth()->check() && auth()->user()->role === 'user') {
+        // Aggiorna utente esistente
+        $user = auth()->user();
+        $user->update([
             'role' => 'validator',
-            'is_verified_validator' => false, // Richiede approvazione admin
+            'is_verified_validator' => false,
             'identity_document_path' => $documentPath,
             'tcg_categories' => $request->tcg_categories,
             'validation_notes' => $request->expertise_notes,
             'vat_number' => $request->vat_number,
         ]);
+    } else {
+        // Crea nuovo utente
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => 'validator',
+            'is_verified_validator' => false,
+            'identity_document_path' => $documentPath,
+            'tcg_categories' => $request->tcg_categories,
+            'validation_notes' => $request->expertise_notes,
+            'vat_number' => $request->vat_number,
+        ]);
+    }
 
         // TODO: Notifica l'admin via email di una nuova candidatura
         // Notification::send(User::admins()->get(), new NewValidatorApplication($user));
