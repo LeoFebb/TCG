@@ -293,10 +293,7 @@
             </p>
         </form>
     </div>
-@endsection
-
-@push('scripts')
-    <script>
+       <script>
         /**
          * Gestisce la selezione del file per il documento d'identità.
          * Mostra un'anteprima con il nome del file invece dell'input nascosto.
@@ -342,5 +339,15 @@
             input.files = e.dataTransfer.files;
             handleFileSelect(input);
         });
+
+        function openFilePicker(e) {
+    // Non aprire il file picker se si clicca sul pulsante di rimozione
+    if (e.target.closest('button')) return;
+    document.getElementById('images').click();
+    }
     </script>
-@endpush
+
+@endsection
+
+
+ 

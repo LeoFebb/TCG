@@ -190,15 +190,30 @@ class ValidatorController extends Controller
             }
 
             // Per le vendite: il venditore deve pagare le spese di spedizione
-if ($transaction->type === 'sale') {
-    $transaction->seller->update([
-        'has_shipping_debt' => true,
-        'shipping_debt_amount' => $transaction->seller->shipping_debt_amount + 5.90,
-    ]);
-}
+            if ($transaction->type === 'sale') {
+                $transaction->seller->update([
+                    'has_shipping_debt' => true,
+                    'shipping_debt_amount' => $transaction->seller->shipping_debt_amount + 5.9,
+                ]);
+            }
 
             // La carta torna disponibile
-            $transaction->card->update(['status' => 'available']);
+            // Togli la carta dal marketplace
+            // Per le vendite: togli la carta dal marketplace
+// Per le permute: le carte tornano disponibili per entrambi
+if ($transaction->type === 'sale') {
+    $transaction->card->update(['status' => 'unavailable']);
+} else {
+    $transaction->card->update(['status' => 'available']);
+    // Cerca la carta dell'altro utente nella permuta e rendila disponibile
+    $otherCard = \App\Models\Card::where('user_id', $transaction->buyer_id)
+        ->where('status', 'in_negotiation')
+        ->latest()
+        ->first();
+    if ($otherCard) {
+        $otherCard->update(['status' => 'available']);
+    }
+}
 
             Log::warning('Transaction rejected by validator', [
                 'transaction_id' => $transaction->id,
