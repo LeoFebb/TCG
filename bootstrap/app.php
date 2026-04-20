@@ -10,6 +10,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tcg_validator' => \App\Http\Middleware\EnsureIsValidator::class,
             'not_validator' => \App\Http\Middleware\EnsureIsNotValidator::class,
+            'check_shipping_debt' => \App\Http\Middleware\CheckShippingDebt::class,
         ]);
         $middleware->validateCsrfTokens(except: ['stripe/webhook', 'validator/transaction/*/approve']);
     })

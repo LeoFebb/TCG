@@ -66,7 +66,22 @@
                         </div>
                     </div>
                 </div>
-
+                {{-- Debito spedizione --}}
+@if(auth()->user()->has_shipping_debt)
+    <div class="rounded-xl border border-red-800/50 p-5 mt-6" style="background: rgba(127,29,29,0.15);">
+        <p class="text-red-400 font-bold text-sm mb-2">⚠️ Account sospeso</p>
+        <p class="text-gray-400 text-xs mb-3">
+            Hai un debito di spedizione di 
+            <span class="text-red-400 font-bold">€{{ number_format(auth()->user()->shipping_debt_amount, 2) }}</span>
+            da saldare per operare sul sito.
+        </p>
+        <a href="{{ route('shipping.debt.pay') }}" 
+           class="block w-full py-2 rounded-xl font-bold text-white text-sm text-center"
+           style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+            Paga ora
+        </a>
+    </div>
+@endif
                 {{-- Link rapidi --}}
                 <div class="mt-6 space-y-2">
                     <a href="{{ route('cards.my') }}"

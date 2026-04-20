@@ -170,7 +170,7 @@
         </div>
     </form>
 </div>
-@push('scripts')
+
 <script>
     let selectedFiles = [];
 
@@ -308,7 +308,7 @@
     document.getElementById('images').click();
     }
 </script>
-@endpush
+
 @endsection
 
 

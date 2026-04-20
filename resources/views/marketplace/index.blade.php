@@ -139,7 +139,7 @@
                 class="rounded-xl overflow-hidden border border-purple-900/50 hover:border-purple-500 transition group block"
                 style="background: rgba(45, 17, 84, 0.3);">
                 <div class="aspect-[2/3] bg-black/40 overflow-hidden relative">
-                    @if ($card->images && count($card->images) > 0)
+                    @if (count(is_array($card->images) ? $card->images : json_decode($card->images, true) ?? []))
                         <img src="{{ str_starts_with($card->images[0], 'http') ? $card->images[0] : Storage::url($card->images[0]) }}"
                             alt="{{ $card->name }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition duration-300">

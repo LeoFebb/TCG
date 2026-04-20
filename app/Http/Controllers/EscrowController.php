@@ -65,15 +65,14 @@ class EscrowController extends Controller
         $stripePublicKey = config('services.stripe.key');
         $stripePublicKey = config('services.stripe.key');
 
-
         try {
             $totalAmount = (int) ($card->price * 100) + self::SHIPPING_COST;
             $paymentIntent = $this->escrowService->createPaymentIntent(amount: $totalAmount, sellerId: $card->user_id, cardId: $card->id);
             $clientSecret = $paymentIntent->client_secret;
             $transaction->update(['stripe_intent_id' => $paymentIntent->id]);
         } catch (\Exception $e) {
-    Log::error('Stripe checkout error: ' . $e->getMessage());
-}
+            Log::error('Stripe checkout error: ' . $e->getMessage());
+        }
 
         return view('marketplace.checkout', [
             'card' => $card,
@@ -89,31 +88,31 @@ class EscrowController extends Controller
     }
 
     public function checkoutSuccess(Request $request, Transaction $transaction)
-{
-    abort_if($transaction->buyer_id !== Auth::id(), 403);
-    
-    // Verifica lo stato del PaymentIntent su Stripe
-    if ($transaction->stripe_intent_id && $transaction->status === 'pending_payment') {
-        try {
-            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
-$paymentIntent = \Stripe\PaymentIntent::retrieve($transaction->stripe_intent_id);
-            if ($paymentIntent->status === 'succeeded') {
-                $transaction->update([
-                    'status' => 'paid_escrow',
-                    'escrow_paid_at' => now(),
-                ]);
-                $transaction->card->update(['status' => 'in_negotiation']);
-            } elseif (in_array($paymentIntent->status, ['canceled', 'payment_failed'])) {
-    $transaction->update(['status' => 'rejected']);
-    $transaction->card->update(['status' => 'available']);
-}
-        } catch (\Exception $e) {
-            Log::error('Stripe checkout success error: ' . $e->getMessage());
+    {
+        abort_if($transaction->buyer_id !== Auth::id(), 403);
+
+        // Verifica lo stato del PaymentIntent su Stripe
+        if ($transaction->stripe_intent_id && $transaction->status === 'pending_payment') {
+            try {
+                \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+                $paymentIntent = \Stripe\PaymentIntent::retrieve($transaction->stripe_intent_id);
+                if ($paymentIntent->status === 'succeeded') {
+                    $transaction->update([
+                        'status' => 'paid_escrow',
+                        'escrow_paid_at' => now(),
+                    ]);
+                    $transaction->card->update(['status' => 'in_negotiation']);
+                } elseif (in_array($paymentIntent->status, ['canceled', 'payment_failed'])) {
+                    $transaction->update(['status' => 'rejected']);
+                    $transaction->card->update(['status' => 'available']);
+                }
+            } catch (\Exception $e) {
+                Log::error('Stripe checkout success error: ' . $e->getMessage());
+            }
         }
+
+        return redirect()->route('transactions.index')->with('success', 'Pagamento completato!');
     }
-    
-    return redirect()->route('transactions.index')->with('success', 'Pagamento completato!');
-}
 
     public function updateShipping(Request $request, Transaction $transaction)
     {
@@ -247,5 +246,37 @@ $paymentIntent = \Stripe\PaymentIntent::retrieve($transaction->stripe_intent_id)
         $transaction->update(['validator_id' => $request->validator_id]);
 
         return redirect()->route('transactions.index')->with('success', 'Validatore scelto con successo!');
+    }
+
+    public function payShippingDebt()
+    {
+        abort_if(!Auth::user()->has_shipping_debt, 403);
+
+        \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+        $amount = (int) (Auth::user()->shipping_debt_amount * 100);
+
+        $paymentIntent = \Stripe\PaymentIntent::create([
+            'amount' => $amount,
+            'currency' => 'eur',
+            'metadata' => ['user_id' => Auth::id(), 'type' => 'shipping_debt'],
+        ]);
+
+        return view('shipping.debt-pay', [
+            'clientSecret' => $paymentIntent->client_secret,
+            'stripePublicKey' => config('services.stripe.key'),
+            'amount' => Auth::user()->shipping_debt_amount,
+        ]);
+    }
+
+    public function shippingDebtSuccess(Request $request)
+    {
+        $user = Auth::user();
+        $user->update([
+            'has_shipping_debt' => false,
+            'shipping_debt_amount' => 0,
+        ]);
+
+        return redirect()->route('marketplace.index')->with('success', 'Debito saldato! Puoi operare nuovamente sul sito.');
     }
 }

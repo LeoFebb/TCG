@@ -324,7 +324,7 @@
                                         <form method="POST" action="{{ route('transaction.mark-shipped', $t) }}"
                                             class="flex gap-2">
                                             @csrf
-                                            <input type="text" name="tracking_number"
+                                            <input type="text" name="buyer_tracking_number"
                                                 placeholder="Numero tracking (opzionale)"
                                                 class="flex-1 px-4 py-2 rounded-lg text-white text-sm border"
                                                 style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">

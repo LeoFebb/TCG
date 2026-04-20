@@ -7,17 +7,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Card extends Model
 {
-    protected $fillable = [
-    'user_id', 'name', 'set_name', 'card_number', 'tcg_category',
-    'rarity', 'condition', 'price', 'available_for_trade',
-    'status', 'is_validated', 'images', 'description',
-    ];
+    protected $fillable = ['user_id', 'name', 'set_name', 'card_number', 'tcg_category', 'rarity', 'condition', 'price', 'available_for_trade', 'type', 'status', 'is_validated', 'images', 'description'];
 
     protected $casts = [
-        'images'              => 'array',
-        'price'               => 'decimal:2',
+        
+        'price' => 'decimal:2',
         'available_for_trade' => 'boolean',
-        'is_validated'        => 'boolean',
+        'is_validated' => 'boolean',
     ];
 
     public function owner(): BelongsTo
@@ -32,13 +28,20 @@ class Card extends Model
 
     public function scopeAvailable($query)
     {
-        return $query->where('status', 'available')
-                        ->where('is_validated', true);
+        return $query->where('status', 'available')->where('is_validated', true);
     }
 
     public function scopeForSale($query)
     {
         return $query->available()->whereNotNull('price');
+    }
+
+    public function getImagesAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        return json_decode($value, true) ?? [];
     }
 
     public function scopeForTrade($query)
@@ -47,5 +50,5 @@ class Card extends Model
     }
 
     public $sellers_count = 1;
-public $min_price = null;
+    public $min_price = null;
 }

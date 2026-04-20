@@ -28,7 +28,7 @@
             <div>
                 <div
                     class="aspect-[2/3] bg-black/40 rounded-xl overflow-hidden border border-purple-900/50 max-w-sm mx-auto lg:mx-0">
-                    @if ($card->images && count($card->images) > 0)
+                    @if (count(is_array($card->images) ? $card->images : json_decode($card->images, true) ?? []))
                         <img src="{{ str_starts_with($card->images[0], 'http') ? $card->images[0] : Storage::url($card->images[0]) }}"
                             alt="{{ $card->name }}" class="w-full h-full object-cover">
                     @else
@@ -38,7 +38,7 @@
                     @endif
                 </div>
 
-                @if ($card->images && count($card->images) > 1)
+                @if (count(is_array($card->images) ? $card->images : json_decode($card->images, true) ?? []))
                     <div class="grid grid-cols-4 gap-2 mt-3 max-w-sm mx-auto lg:mx-0">
                         @foreach (array_slice($card->images, 1, 4) as $img)
                             <div class="aspect-[2/3] bg-black/40 rounded-lg overflow-hidden border border-purple-900/50">

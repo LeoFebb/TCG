@@ -52,14 +52,17 @@ class ValidatorController extends Controller
             ->get();
 
         $stats = [
-            
-    'pending' => $pendingTasks->total(),
-    'validated' => Transaction::where(function($q) {
-        $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
-    })->whereIn('status', ['validated', 'shipping'])->count(),
-    'completed' => Transaction::where(function($q) {
-    $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
-})->whereIn('status', ['completed', 'disputed'])->count(),
+            'pending' => $pendingTasks->total(),
+            'validated' => Transaction::where(function ($q) {
+                $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
+            })
+                ->whereIn('status', ['validated', 'shipping'])
+                ->count(),
+            'completed' => Transaction::where(function ($q) {
+                $q->where('validator_id', Auth::id())->orWhere('buyer_validator_id', Auth::id());
+            })
+                ->whereIn('status', ['completed', 'disputed'])
+                ->count(),
         ];
 
         return view('validator.dashboard', compact('pendingTasks', 'completedTasks', 'stats'));
@@ -170,9 +173,32 @@ class ValidatorController extends Controller
                 'validated_at' => now(),
             ]);
 
-            // La carta rimane bloccata - non torna in vendita
-            // L'admin deciderà il destino finale della carta
-            $transaction->card->update(['status' => 'in_negotiation']);
+            // Per le vendite: rimborsa l'acquirente su Stripe
+            if ($transaction->type === 'sale' && $transaction->stripe_intent_id) {
+                try {
+                    \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+                    $paymentIntent = \Stripe\PaymentIntent::retrieve($transaction->stripe_intent_id);
+                    if ($paymentIntent->status === 'succeeded') {
+                        \Stripe\Refund::create([
+                            'payment_intent' => $transaction->stripe_intent_id,
+                        ]);
+                        Log::info('Rimborso effettuato per transazione #' . $transaction->id);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Errore rimborso Stripe: ' . $e->getMessage());
+                }
+            }
+
+            // Per le vendite: il venditore deve pagare le spese di spedizione
+if ($transaction->type === 'sale') {
+    $transaction->seller->update([
+        'has_shipping_debt' => true,
+        'shipping_debt_amount' => $transaction->seller->shipping_debt_amount + 5.90,
+    ]);
+}
+
+            // La carta torna disponibile
+            $transaction->card->update(['status' => 'available']);
 
             Log::warning('Transaction rejected by validator', [
                 'transaction_id' => $transaction->id,
@@ -227,26 +253,25 @@ class ValidatorController extends Controller
         }
 
         if ($transaction->type === 'trade') {
-    if ($transaction->buyer_validator_id === Auth::id()) {
-        $transaction->update([
-            'buyer_validator_shipped' => true,
-            'return_tracking_number' => $request->return_tracking_number,
-            'status' => 'completed',
-        ]);
-    } else {
-        $transaction->update([
-            'validator_shipped' => true,
-            'return_tracking_number' => $request->return_tracking_number,
-            'status' => 'completed',
-        ]);
-    }
-} else {
-    $transaction->update([
-        'return_tracking_number' => $request->return_tracking_number,
-        'status' => 'shipping',
-    ]);
-}
-           
+            if ($transaction->buyer_validator_id === Auth::id()) {
+                $transaction->update([
+                    'buyer_validator_shipped' => true,
+                    'return_tracking_number' => $request->return_tracking_number,
+                    'status' => 'completed',
+                ]);
+            } else {
+                $transaction->update([
+                    'validator_shipped' => true,
+                    'return_tracking_number' => $request->return_tracking_number,
+                    'status' => 'completed',
+                ]);
+            }
+        } else {
+            $transaction->update([
+                'return_tracking_number' => $request->return_tracking_number,
+                'status' => 'shipping',
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Spedizione confermata!');
     }
@@ -267,21 +292,18 @@ class ValidatorController extends Controller
                     'seller_shipped' => true,
                 ]);
             }
-            // Se entrambi hanno ricevuto → in_validation
             $transaction->refresh();
             if ($transaction->validator_received && $transaction->buyer_validator_received) {
-    $transaction->update(['status' => 'in_validation']);
-    
-    // Apri chat solo se i due validatori sono diversi
-    if ($transaction->validator_id !== $transaction->buyer_validator_id) {
-        \App\Models\ChatRoom::firstOrCreate([
-            'transaction_id' => $transaction->id,
-            'user_1_id' => $transaction->validator_id,
-            'user_2_id' => $transaction->buyer_validator_id,
-        ]);
-    }
-} else {
-            // Vendita: solo validatore del venditore
+                $transaction->update(['status' => 'in_validation']);
+                if ($transaction->validator_id !== $transaction->buyer_validator_id) {
+                    \App\Models\ChatRoom::firstOrCreate([
+                        'transaction_id' => $transaction->id,
+                        'user_1_id' => $transaction->validator_id,
+                        'user_2_id' => $transaction->buyer_validator_id,
+                    ]);
+                }
+            }
+        } else {
             abort_if($transaction->validator_id !== Auth::id(), 403);
             $transaction->update([
                 'validator_received' => true,
@@ -289,10 +311,7 @@ class ValidatorController extends Controller
                 'status' => 'in_validation',
             ]);
         }
-        
 
         return redirect()->back()->with('success', 'Carta ricevuta confermata!');
     }
-    
-}
 }

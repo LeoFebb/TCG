@@ -116,18 +116,20 @@
                                 @endif
 
                                 {{-- Parti coinvolte --}}
-                                <div class="flex flex-wrap items-center gap-3 md:gap-6 mt-3 text-sm">
-                                    <div>
-                                        <span class="text-vault-muted font-mono text-xs">VENDITORE </span>
-                                        <span class="text-vault-text">{{ $transaction->seller->name }}</span>
+                                @if ($transaction->type === 'trade')
+                                    <div class="flex flex-wrap items-center gap-3 md:gap-6 mt-3 text-sm">
+                                        <div>
+                                            <span class="text-vault-muted font-mono text-xs">VENDITORE </span>
+                                            <span class="text-vault-text">{{ $transaction->seller->name }}</span>
+                                        </div>
+                                        <span class="text-vault-border">→</span>
+                                        <div>
+                                            <span class="text-vault-muted font-mono text-xs">ACQUIRENTE </span>
+                                            <span class="text-vault-text">{{ $transaction->buyer->name }}</span>
+                                        </div>
                                     </div>
-                                    <span class="text-vault-border">→</span>
-                                    <div>
-                                        <span class="text-vault-muted font-mono text-xs">ACQUIRENTE </span>
-                                        <span class="text-vault-text">{{ $transaction->buyer->name }}</span>
-                                    </div>
-                                </div>
-                               
+                                @endif
+
                                 {{-- Stato ricezione (solo permute) --}}
                                 @php
                                     $trackingToShow =
@@ -146,17 +148,16 @@
                                         <p class="text-white font-mono text-xs font-bold">{{ $trackingToShow }}</p>
                                     </div>
                                 @endif
-                                <div class="flex items-center gap-1.5">
-                                    <span
-                                        class="w-2 h-2 rounded-full {{ $transaction->seller_shipped && $transaction->validator_received ? 'bg-emerald-400' : 'bg-vault-border' }}"></span>
-                                    <span class="text-xs font-mono text-vault-muted">Carta venditore ricevuta</span>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span
-                                        class="w-2 h-2 rounded-full {{ $transaction->buyer_shipped && $transaction->validator_received ? 'bg-emerald-400' : 'bg-vault-border' }}"></span>
-                                    <span class="text-xs font-mono text-vault-muted">Carta acquirente
-                                        ricevuta</span>
-                                </div>
+                                @if($transaction->type === 'trade')
+<div class="flex items-center gap-1.5">
+    <span class="w-2 h-2 rounded-full {{ $transaction->seller_shipped && $transaction->validator_received ? 'bg-emerald-400' : 'bg-vault-border' }}"></span>
+    <span class="text-xs font-mono text-vault-muted">Carta venditore ricevuta</span>
+</div>
+<div class="flex items-center gap-1.5">
+    <span class="w-2 h-2 rounded-full {{ $transaction->buyer_shipped && $transaction->validator_received ? 'bg-emerald-400' : 'bg-vault-border' }}"></span>
+    <span class="text-xs font-mono text-vault-muted">Carta acquirente ricevuta</span>
+</div>
+@endif
                             </div>
 
                             {{-- Notifica quando l'altra carta è pronta --}}
@@ -179,148 +180,153 @@
                                             destinatario.</p>
                                     </div>
                                 @endif
-                            
-            @endif
+                            @endif
 
-            {{-- Importo (solo vendite) --}}
-            @if ($transaction->type === 'sale')
-                <div class="text-left md:text-right mt-3 md:mt-0">
-                    <p class="font-mono text-xs text-vault-muted uppercase mb-1">Importo in escrow</p>
-                    <p class="font-display text-3xl text-vault-gold">
-                        €{{ number_format($transaction->amount, 2, ',', '.') }}
-                    </p>
-                    <p class="font-mono text-xs text-vault-muted mt-1">
-                        Comm. piattaforma:
-                        €{{ number_format($transaction->platform_fee, 2, ',', '.') }}
-                    </p>
-                </div>
-            @endif
-        </div>
+                            {{-- Importo (solo vendite) --}}
+                            @if ($transaction->type === 'sale')
+                                <div class="text-left md:text-right mt-3 md:mt-0">
+                                    <p class="font-mono text-xs text-vault-muted uppercase mb-1">Importo in escrow</p>
+                                    <p class="font-display text-3xl text-vault-gold">
+                                        €{{ number_format($transaction->amount, 2, ',', '.') }}
+                                    </p>
+                                    <p class="font-mono text-xs text-vault-muted mt-1">
+                                        Comm. piattaforma:
+                                        €{{ number_format($transaction->platform_fee, 2, ',', '.') }}
+                                    </p>
+                                </div>
+                            @endif
+                        </div>
 
-        {{-- Azioni --}}
-        <div class="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-vault-border">
-
-
-            {{-- Dettagli --}}
-            <a href="{{ route('validator.transaction.show', $transaction) }}"
-                class="px-4 py-2 border border-vault-border text-vault-muted hover:text-vault-text hover:border-vault-gold text-sm transition-all">
-                Esamina dettagli &#8594;
-            </a>
-
-            @php
-                $hasReceived =
-                    $transaction->buyer_validator_id === Auth::id()
-                        ? $transaction->buyer_validator_received
-                        : $transaction->validator_received;
-            @endphp
-            @if ($transaction->canBeValidated() && !$hasReceived)
-                <form method="POST" action="{{ route('validator.transaction.received', $transaction) }}">
-                    @csrf
-                    <button type="submit"
-                        class="px-6 py-2 bg-sky-950/50 border border-sky-800/50 text-sky-400 hover:bg-sky-900/50 text-sm transition-all flex items-center gap-2">
-                        &#10003; Carta ricevuta
-                    </button>
-                </form>
-            @endif
-                {{-- Box chat automatica --}}
-@php
-    $chatRoom = $hasReceived && $transaction->validator_id !== $transaction->buyer_validator_id
-        ? \App\Models\ChatRoom::where('transaction_id', $transaction->id)->first()
-        : null;
-@endphp
-@if($chatRoom)
-    <a href="{{ route('chat.show', $chatRoom) }}"
-       class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-blue-800/50 mb-3"
-       style="background: rgba(59,130,246,0.08);">
-        <span style="font-size:16px">💬</span>
-        <div>
-            <p class="text-blue-400 font-bold text-sm">Chat con l'altro validatore</p>
-            @php $other = $chatRoom->user_1_id === Auth::id() ? $chatRoom->user2 : $chatRoom->user1; @endphp
-            <p class="text-gray-500 text-xs">Coordinati con {{ $other->name }} prima di approvare</p>
-        </div>
-        <span class="ml-auto text-blue-400 text-sm">→</span>
-    </a>
-@endif
-            <div id="actions-{{ $transaction->id }}" class="{{ !$hasReceived ? 'hidden' : '' }} flex flex-wrap gap-2">
-
-                @php
-                    $hasApproved =
-                        $transaction->type === 'trade'
-                            ? ($transaction->buyer_validator_id === Auth::id()
-                                ? $transaction->buyer_validated
-                                : $transaction->seller_validated)
-                            : false;
-                @endphp
-                @if ($transaction->canBeValidated() && !$hasApproved)
-                    {{-- APPROVA --}}
-                    <form method="POST" action="{{ route('validator.transaction.approve', $transaction) }}"
-                        onsubmit="return openApproveModal(event, this)">
-                        @csrf
-                        <input type="hidden" name="validator_notes" value="">
-                        <button type="submit"
-                            class="px-6 py-2 bg-green-950/50 border border-green-800/50 text-green-400 hover:bg-green-900/50 text-sm transition-all flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Approva
-                        </button>
-                    </form>
-
-                    {{-- RIFIUTA --}}
-                    <button onclick="openRejectModal({{ $transaction->id }})"
-                        class="px-6 py-2 bg-red-950/50 border border-red-800/50 text-red-400 hover:bg-red-900/50 text-sm transition-all flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Rifiuta
-                    </button>
-                @elseif($hasApproved)
-                    <span class="px-4 py-2 text-green-400 text-sm">&#9989; Hai già approvato questa
-                        carta</span>
-                @endif
-                {{-- Pulsante etichetta rispedizione (solo dopo validazione) --}}
-                @if ($transaction->status === 'shipping' || ($transaction->status === 'validated' && $transaction->type === 'sale'))
-                    <a href="{{ route('shipping.return-label', $transaction) }}" target="_blank"
-                        class="px-4 py-2 rounded-lg border border-purple-700 text-purple-400 hover:bg-purple-900/30 text-sm transition flex items-center gap-2">
-                        &#128424; Stampa etichetta rispedizione
-                    </a>
-                    @if ($transaction->status === 'validated')
-                        <form method="POST" action="{{ route('validator.mark-shipped', $transaction) }}"
-                            class="flex items-center gap-2 mt-2">
-                            @csrf
-                            <input type="text" name="return_tracking_number" placeholder="Tracking (opzionale)"
-                                class="px-3 py-2 rounded-lg text-white text-xs border flex-1"
-                                style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
-                            <button type="submit"
-                                class="px-4 py-2 rounded-lg text-xs font-bold text-white whitespace-nowrap"
-                                style="background: linear-gradient(135deg, #059669, #10b981);">
-                                &#9989; Ho spedito
-                            </button>
-                        </form>
-                    @endif
-                @endif
+                        {{-- Azioni --}}
+                        <div class="flex flex-wrap items-center gap-3 mt-6 pt-5 border-t border-vault-border">
 
 
+                            {{-- Dettagli --}}
+                            <a href="{{ route('validator.transaction.show', $transaction) }}"
+                                class="px-4 py-2 border border-vault-border text-vault-muted hover:text-vault-text hover:border-vault-gold text-sm transition-all">
+                                Esamina dettagli &#8594;
+                            </a>
 
-                {{-- Timestamp --}}
-                <span class="ml-auto font-mono text-xs text-vault-muted">
-                    {{ $transaction->created_at->diffForHumans() }}
-                </span>
+                            @php
+                                $hasReceived =
+                                    $transaction->buyer_validator_id === Auth::id()
+                                        ? $transaction->buyer_validator_received
+                                        : $transaction->validator_received;
+                            @endphp
+                            @if ($transaction->canBeValidated() && !$hasReceived)
+                                <form method="POST" action="{{ route('validator.transaction.received', $transaction) }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="px-6 py-2 bg-sky-950/50 border border-sky-800/50 text-sky-400 hover:bg-sky-900/50 text-sm transition-all flex items-center gap-2">
+                                        &#10003; Carta ricevuta
+                                    </button>
+                                </form>
+                            @endif
+                            {{-- Box chat automatica --}}
+                            @php
+                                $chatRoom =
+                                    $hasReceived && $transaction->validator_id !== $transaction->buyer_validator_id
+                                        ? \App\Models\ChatRoom::where('transaction_id', $transaction->id)->first()
+                                        : null;
+                            @endphp
+                            @if ($chatRoom)
+                                <a href="{{ route('chat.show', $chatRoom) }}"
+                                    class="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-blue-800/50 mb-3"
+                                    style="background: rgba(59,130,246,0.08);">
+                                    <span style="font-size:16px">💬</span>
+                                    <div>
+                                        <p class="text-blue-400 font-bold text-sm">Chat con l'altro validatore</p>
+                                        @php $other = $chatRoom->user_1_id === Auth::id() ? $chatRoom->user2 : $chatRoom->user1; @endphp
+                                        <p class="text-gray-500 text-xs">Coordinati con {{ $other->name }} prima di
+                                            approvare</p>
+                                    </div>
+                                    <span class="ml-auto text-blue-400 text-sm">→</span>
+                                </a>
+                            @endif
+                            <div id="actions-{{ $transaction->id }}"
+                                class="{{ !$hasReceived ? 'hidden' : '' }} flex flex-wrap gap-2">
+
+                                @php
+                                    $hasApproved =
+                                        $transaction->type === 'trade'
+                                            ? ($transaction->buyer_validator_id === Auth::id()
+                                                ? $transaction->buyer_validated
+                                                : $transaction->seller_validated)
+                                            : false;
+                                @endphp
+                                @if ($transaction->canBeValidated() && !$hasApproved)
+                                    {{-- APPROVA --}}
+                                    <form method="POST"
+                                        action="{{ route('validator.transaction.approve', $transaction) }}"
+                                        onsubmit="return openApproveModal(event, this)">
+                                        @csrf
+                                        <input type="hidden" name="validator_notes" value="">
+                                        <button type="submit"
+                                            class="px-6 py-2 bg-green-950/50 border border-green-800/50 text-green-400 hover:bg-green-900/50 text-sm transition-all flex items-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Approva
+                                        </button>
+                                    </form>
+
+                                    {{-- RIFIUTA --}}
+                                    <button onclick="openRejectModal({{ $transaction->id }})"
+                                        class="px-6 py-2 bg-red-950/50 border border-red-800/50 text-red-400 hover:bg-red-900/50 text-sm transition-all flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Rifiuta
+                                    </button>
+                                @elseif($hasApproved)
+                                    <span class="px-4 py-2 text-green-400 text-sm">&#9989; Hai già approvato questa
+                                        carta</span>
+                                @endif
+                                {{-- Pulsante etichetta rispedizione (solo dopo validazione) --}}
+                                @if ($transaction->status === 'shipping' || ($transaction->status === 'validated' && $transaction->type === 'sale'))
+                                    <a href="{{ route('shipping.return-label', $transaction) }}" target="_blank"
+                                        class="px-4 py-2 rounded-lg border border-purple-700 text-purple-400 hover:bg-purple-900/30 text-sm transition flex items-center gap-2">
+                                        &#128424; Stampa etichetta rispedizione
+                                    </a>
+                                    @if ($transaction->status === 'validated')
+                                        <form method="POST" action="{{ route('validator.mark-shipped', $transaction) }}"
+                                            class="flex items-center gap-2 mt-2">
+                                            @csrf
+                                            <input type="text" name="return_tracking_number"
+                                                placeholder="Tracking (opzionale)"
+                                                class="px-3 py-2 rounded-lg text-white text-xs border flex-1"
+                                                style="background: rgba(0,0,0,0.4); border-color: rgba(124,58,237,0.3);">
+                                            <button type="submit"
+                                                class="px-4 py-2 rounded-lg text-xs font-bold text-white whitespace-nowrap"
+                                                style="background: linear-gradient(135deg, #059669, #10b981);">
+                                                &#9989; Ho spedito
+                                            </button>
+                                        </form>
+                                    @endif
+                                @endif
+
+
+
+                                {{-- Timestamp --}}
+                                <span class="ml-auto font-mono text-xs text-vault-muted">
+                                    {{ $transaction->created_at->diffForHumans() }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="border border-vault-border bg-vault-card p-12 text-center">
+                        <p class="font-display text-2xl text-vault-muted font-light">Nessun task in attesa</p>
+                        <p class="text-vault-muted text-sm mt-2">Torna più tardi per nuove transazioni da validare.</p>
+                    </div>
+            @endforelse
+
+            {{-- Paginazione --}}
+            <div class="mt-6">
+                {{ $pendingTasks->links() }}
             </div>
-        </div>
-    </div>
-    @empty
-        <div class="border border-vault-border bg-vault-card p-12 text-center">
-            <p class="font-display text-2xl text-vault-muted font-light">Nessun task in attesa</p>
-            <p class="text-vault-muted text-sm mt-2">Torna più tardi per nuove transazioni da validare.</p>
-        </div>
-        @endforelse
-
-        {{-- Paginazione --}}
-        <div class="mt-6">
-            {{ $pendingTasks->links() }}
-        </div>
         </div>
 
         {{-- Transazioni recenti completate --}}
@@ -392,102 +398,102 @@
                 </div>
             </div>
         @endif
-        </div>
-        {{-- Modal Approvazione --}}
-        <div id="approveModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
-            style="background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);">
-            <div class="rounded-2xl border border-green-800/50 p-8 w-full max-w-md" style="background: rgba(13,0,26,0.97);">
-                <div class="text-center mb-6">
-                    <div class="text-5xl mb-4">&#9989;</div>
-                    <h3 class="text-2xl font-black text-white mb-2">Conferma approvazione</h3>
-                    <p class="text-gray-400 text-sm">
-                        Stai per approvare questa transazione.<br>
-                        I fondi verranno rilasciati al venditore.
-                    </p>
-                </div>
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeApproveModal()"
-                        class="flex-1 py-3 rounded-xl font-bold text-gray-400 border border-gray-700 hover:text-white transition">
-                        Annulla
-                    </button>
-                    <button type="button" onclick="submitApproveForm()"
-                        class="flex-1 py-3 rounded-xl font-bold text-white transition"
-                        style="background: linear-gradient(135deg, #059669, #10b981);">
-                        &#9989; Approva
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        @push('scripts')
-            <script>
-                let approveForm = null;
-
-                function openApproveModal(e, form) {
-                    e.preventDefault();
-                    approveForm = form;
-                    document.getElementById('approveModal').classList.remove('hidden');
-                    return false;
-                }
-
-                function closeApproveModal() {
-                    document.getElementById('approveModal').classList.add('hidden');
-                    approveForm = null;
-                }
-
-                function submitApproveForm() {
-                    if (approveForm) approveForm.submit();
-                }
-
-                document.getElementById('approveModal').addEventListener('click', function(e) {
-                    if (e.target === this) closeApproveModal();
-                });
-            </script>
-        @endpush
-
-        {{-- Modal Rifiuto --}}
-        <div id="rejectModal"
-            class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div class="bg-vault-card border border-red-800/50 w-full max-w-md p-8">
-                <h3 class="font-display text-2xl font-light text-red-400 mb-2">Rifiuta Transazione</h3>
-                <p class="text-vault-muted text-sm mb-6">
-                    Descrivi dettagliatamente il motivo del rifiuto. Questa nota sarà visibile all'admin e alle parti coinvolte.
+    </div>
+    {{-- Modal Approvazione --}}
+    <div id="approveModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+        style="background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);">
+        <div class="rounded-2xl border border-green-800/50 p-8 w-full max-w-md" style="background: rgba(13,0,26,0.97);">
+            <div class="text-center mb-6">
+                <div class="text-5xl mb-4">&#9989;</div>
+                <h3 class="text-2xl font-black text-white mb-2">Conferma approvazione</h3>
+                <p class="text-gray-400 text-sm">
+                    Stai per approvare questa transazione.<br>
+                    I fondi verranno rilasciati al venditore.
                 </p>
-                <form id="rejectForm" method="POST">
-                    @csrf
-                    {{-- CSRF: protegge l'endpoint da attacchi cross-site request forgery --}}
-                    <textarea name="rejection_reason" required minlength="20" maxlength="2000" rows="5"
-                        placeholder="Es: La carta presenta segni di usura non dichiarati nel listing, condizione LP vs NM dichiarato. Bordi del fronte segnati con..."
-                        class="w-full bg-vault-surface border border-vault-border text-vault-text p-4 text-sm resize-none focus:outline-none focus:border-red-600 font-body text-black"></textarea>
-                    <p class="font-mono text-xs text-vault-muted mt-1 mb-6">Minimo 20 caratteri</p>
-                    <div class="flex gap-3">
-                        <button type="button" onclick="closeRejectModal()"
-                            class="flex-1 py-3 border border-vault-border text-vault-muted hover:text-vault-text text-sm transition-colors">
-                            Annulla
-                        </button>
-                        <button type="submit"
-                            class="flex-1 py-3 bg-red-900/80 border border-red-700 text-red-300 hover:bg-red-800 text-sm transition-colors">
-                            Conferma Rifiuto
-                        </button>
-                    </div>
-                </form>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeApproveModal()"
+                    class="flex-1 py-3 rounded-xl font-bold text-gray-400 border border-gray-700 hover:text-white transition">
+                    Annulla
+                </button>
+                <button type="button" onclick="submitApproveForm()"
+                    class="flex-1 py-3 rounded-xl font-bold text-white transition"
+                    style="background: linear-gradient(135deg, #059669, #10b981);">
+                    &#9989; Approva
+                </button>
             </div>
         </div>
+    </div>
+
+    @push('scripts')
         <script>
-            function openRejectModal(transactionId) {
-                const form = document.getElementById('rejectForm');
-                // Imposta l'action del form con l'ID della transazione corretta
-                form.action = `/validator/transaction/${transactionId}/reject`;
-                document.getElementById('rejectModal').classList.remove('hidden');
+            let approveForm = null;
+
+            function openApproveModal(e, form) {
+                e.preventDefault();
+                approveForm = form;
+                document.getElementById('approveModal').classList.remove('hidden');
+                return false;
             }
 
-            function closeRejectModal() {
-                document.getElementById('rejectModal').classList.add('hidden');
+            function closeApproveModal() {
+                document.getElementById('approveModal').classList.add('hidden');
+                approveForm = null;
             }
 
-            // Chiudi il modal cliccando fuori dal contenuto
-            document.getElementById('rejectModal').addEventListener('click', function(e) {
-                if (e.target === this) closeRejectModal();
+            function submitApproveForm() {
+                if (approveForm) approveForm.submit();
+            }
+
+            document.getElementById('approveModal').addEventListener('click', function(e) {
+                if (e.target === this) closeApproveModal();
             });
         </script>
-    @endsection
+    @endpush
+
+    {{-- Modal Rifiuto --}}
+    <div id="rejectModal"
+        class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-vault-card border border-red-800/50 w-full max-w-md p-8">
+            <h3 class="font-display text-2xl font-light text-red-400 mb-2">Rifiuta Transazione</h3>
+            <p class="text-vault-muted text-sm mb-6">
+                Descrivi dettagliatamente il motivo del rifiuto. Questa nota sarà visibile all'admin e alle parti coinvolte.
+            </p>
+            <form id="rejectForm" method="POST">
+                @csrf
+                {{-- CSRF: protegge l'endpoint da attacchi cross-site request forgery --}}
+                <textarea name="rejection_reason" required minlength="20" maxlength="2000" rows="5"
+                    placeholder="Es: La carta presenta segni di usura non dichiarati nel listing, condizione LP vs NM dichiarato. Bordi del fronte segnati con..."
+                    class="w-full bg-vault-surface border border-vault-border text-vault-text p-4 text-sm resize-none focus:outline-none focus:border-red-600 font-body text-black"></textarea>
+                <p class="font-mono text-xs text-vault-muted mt-1 mb-6">Minimo 20 caratteri</p>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeRejectModal()"
+                        class="flex-1 py-3 border border-vault-border text-vault-muted hover:text-vault-text text-sm transition-colors">
+                        Annulla
+                    </button>
+                    <button type="submit"
+                        class="flex-1 py-3 bg-red-900/80 border border-red-700 text-red-300 hover:bg-red-800 text-sm transition-colors">
+                        Conferma Rifiuto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function openRejectModal(transactionId) {
+            const form = document.getElementById('rejectForm');
+            // Imposta l'action del form con l'ID della transazione corretta
+            form.action = `/validator/transaction/${transactionId}/reject`;
+            document.getElementById('rejectModal').classList.remove('hidden');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.add('hidden');
+        }
+
+        // Chiudi il modal cliccando fuori dal contenuto
+        document.getElementById('rejectModal').addEventListener('click', function(e) {
+            if (e.target === this) closeRejectModal();
+        });
+    </script>
+@endsection

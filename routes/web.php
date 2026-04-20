@@ -21,6 +21,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chat/{room}/send', [ChatController::class, 'send'])->name('chat.send');
 });
 
+Route::get('/shipping-debt', function() {
+    return view('shipping.debt');
+})->name('shipping.debt')->middleware('auth');
+
 // Etichette spedizione
 Route::get('/transaction/{transaction}/label', [ShippingController::class, 'generateLabel'])->name('shipping.label');
 Route::get('/transaction/{transaction}/return-label', [ShippingController::class, 'generateReturnLabel'])->name('shipping.return-label');
@@ -93,7 +97,7 @@ Route::middleware(['auth', 'tcg_validator'])
     });
 
 // Carte
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'check_shipping_debt'])->group(function () {
     Route::get('/cards/create', [CardController::class, 'create'])->name('cards.create');
     Route::post('/cards', [CardController::class, 'store'])->name('cards.store');
     Route::delete('/cards/{card}', [CardController::class, 'destroy'])->name('cards.destroy');
@@ -128,7 +132,7 @@ Route::get('/dashboard-utente', [DashboardController::class, 'index'])
     ->middleware(['auth', 'not_validator']);
 
 // Acquisto / Permuta (richiede auth)
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'check_shipping_debt'])->group(function () {
     Route::match(['get', 'post'], '/checkout/{card}', [EscrowController::class, 'checkout'])->name('checkout');
     Route::post('/checkout/{transaction}/update-shipping', [EscrowController::class, 'updateShipping'])->name('checkout.update-shipping');
     Route::get('/checkout/{transaction}/success', [EscrowController::class, 'checkoutSuccess'])->name('checkout.success');
@@ -137,6 +141,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaction/{transaction}/shipped', [MarketplaceController::class, 'markShipped'])->name('transaction.shipped');
     Route::get('/validator/profile', [ProfileValidatorController::class, 'edit'])->name('validator.profile.edit');
     Route::post('/validator/profile', [ProfileValidatorController::class, 'update'])->name('validator.profile.update');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/shipping-debt/pay', [EscrowController::class, 'payShippingDebt'])->name('shipping.debt.pay');
+    Route::post('/shipping-debt/pay', [EscrowController::class, 'processShippingDebtPayment'])->name('shipping.debt.pay.process');
+    Route::get('/shipping-debt/success', [EscrowController::class, 'shippingDebtSuccess'])->name('shipping.debt.success');
 });
 
 // Webhook Stripe
