@@ -25,87 +25,87 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
             {{-- Immagine --}}
-            
-                <div>
-                    @php
-                        $images = is_array($card->images) ? $card->images : json_decode($card->images, true) ?? [];
-                    @endphp
 
-                    {{-- Immagine principale --}}
-                    <div class="aspect-[2/3] bg-black/40 rounded-xl overflow-hidden border border-purple-900/50 max-w-sm mx-auto lg:mx-0 relative"
-                        id="main-image-container">
-                        @if (count($images) > 0)
-                            <img id="main-image"
-                                src="{{ str_starts_with($images[0], 'http') ? $images[0] : Storage::url($images[0]) }}"
-                                alt="{{ $card->name }}" class="w-full h-full object-cover">
+            <div>
+                @php
+                    $images = is_array($card->images) ? $card->images : json_decode($card->images, true) ?? [];
+                @endphp
 
-                            @if (count($images) > 1)
-                                <button onclick="prevImage()"
-                                    class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                                    style="background:rgba(0,0,0,0.6)">‹</button>
-                                <button onclick="nextImage()"
-                                    class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
-                                    style="background:rgba(0,0,0,0.6)">›</button>
-                                <div id="image-counter"
-                                    class="absolute bottom-2 right-2 text-xs text-white px-2 py-1 rounded-full"
-                                    style="background:rgba(0,0,0,0.6)">1 / {{ count($images) }}</div>
-                            @endif
-                        @else
-                            <div class="w-full h-full flex items-center justify-center">
-                                <span class="text-6xl">&#128293;</span>
-                            </div>
+                {{-- Immagine principale --}}
+                <div class="aspect-[2/3] bg-black/40 rounded-xl overflow-hidden border border-purple-900/50 max-w-sm mx-auto lg:mx-0 relative"
+                    id="main-image-container">
+                    @if (count($images) > 0)
+                        <img id="main-image"
+                            src="{{ str_starts_with($images[0], 'http') ? $images[0] : Storage::url($images[0]) }}"
+                            alt="{{ $card->name }}" class="w-full h-full object-cover">
+
+                        @if (count($images) > 1)
+                            <button onclick="prevImage()"
+                                class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
+                                style="background:rgba(0,0,0,0.6)">‹</button>
+                            <button onclick="nextImage()"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
+                                style="background:rgba(0,0,0,0.6)">›</button>
+                            <div id="image-counter"
+                                class="absolute bottom-2 right-2 text-xs text-white px-2 py-1 rounded-full"
+                                style="background:rgba(0,0,0,0.6)">1 / {{ count($images) }}</div>
                         @endif
-                    </div>
-
-                    {{-- Thumbnails --}}
-                    @if (count($images) > 1)
-                        <div class="flex gap-2 mt-3 max-w-sm mx-auto lg:mx-0 overflow-x-auto">
-                            @foreach ($images as $i => $img)
-                                <div onclick="goToImage({{ $i }})"
-                                    class="flex-shrink-0 w-16 aspect-[2/3] bg-black/40 rounded-lg overflow-hidden border cursor-pointer transition"
-                                    id="thumb-{{ $i }}"
-                                    style="border-color: {{ $i === 0 ? '#a855f7' : 'rgba(124,58,237,0.3)' }}">
-                                    <img src="{{ str_starts_with($img, 'http') ? $img : Storage::url($img) }}"
-                                        alt="{{ $card->name }}" class="w-full h-full object-cover">
-                                </div>
-                            @endforeach
+                    @else
+                        <div class="w-full h-full flex items-center justify-center">
+                            <span class="text-6xl">&#128293;</span>
                         </div>
                     @endif
                 </div>
 
-                <script>
-                    const images = @json($images);
-                    let currentIndex = 0;
+                {{-- Thumbnails --}}
+                @if (count($images) > 1)
+                    <div class="flex gap-2 mt-3 max-w-sm mx-auto lg:mx-0 overflow-x-auto">
+                        @foreach ($images as $i => $img)
+                            <div onclick="goToImage({{ $i }})"
+                                class="flex-shrink-0 w-16 aspect-[2/3] bg-black/40 rounded-lg overflow-hidden border cursor-pointer transition"
+                                id="thumb-{{ $i }}"
+                                style="border-color: {{ $i === 0 ? '#a855f7' : 'rgba(124,58,237,0.3)' }}">
+                                <img src="{{ str_starts_with($img, 'http') ? $img : Storage::url($img) }}"
+                                    alt="{{ $card->name }}" class="w-full h-full object-cover">
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
 
-                    function updateImage() {
-                        const img = images[currentIndex];
-                        const src = img.startsWith('http') ? img : '/storage/' + img;
-                        document.getElementById('main-image').src = src;
-                        document.getElementById('image-counter').textContent = (currentIndex + 1) + ' / ' + images.length;
+            <script>
+                const images = @json($images);
+                let currentIndex = 0;
 
-                        images.forEach((_, i) => {
-                            const thumb = document.getElementById('thumb-' + i);
-                            if (thumb) thumb.style.borderColor = i === currentIndex ? '#a855f7' : 'rgba(124,58,237,0.3)';
-                        });
-                    }
+                function updateImage() {
+                    const img = images[currentIndex];
+                    const src = img.startsWith('http') ? img : '/storage/' + img;
+                    document.getElementById('main-image').src = src;
+                    document.getElementById('image-counter').textContent = (currentIndex + 1) + ' / ' + images.length;
 
-                    function nextImage() {
-                        currentIndex = (currentIndex + 1) % images.length;
-                        updateImage();
-                    }
+                    images.forEach((_, i) => {
+                        const thumb = document.getElementById('thumb-' + i);
+                        if (thumb) thumb.style.borderColor = i === currentIndex ? '#a855f7' : 'rgba(124,58,237,0.3)';
+                    });
+                }
 
-                    function prevImage() {
-                        currentIndex = (currentIndex - 1 + images.length) % images.length;
-                        updateImage();
-                    }
+                function nextImage() {
+                    currentIndex = (currentIndex + 1) % images.length;
+                    updateImage();
+                }
 
-                    function goToImage(index) {
-                        currentIndex = index;
-                        updateImage();
-                    }
-                </script>
+                function prevImage() {
+                    currentIndex = (currentIndex - 1 + images.length) % images.length;
+                    updateImage();
+                }
 
-                
+                function goToImage(index) {
+                    currentIndex = index;
+                    updateImage();
+                }
+            </script>
+
+
 
             {{-- Dettagli --}}
             <div>
@@ -150,8 +150,7 @@
                 @endif
                 {{-- Grafico andamento prezzi --}}
                 @php
-                    $priceHistory = \App\Models\Transaction::where('card_id', $card->id)
-    ->orWhereHas('card', fn($q) => $q->where('name', $card->name))
+                    $priceHistory = \App\Models\Transaction::whereHas('card', fn($q) => $q->where('name', $card->name))
     ->where('status', 'completed')
     ->where('amount', '>', 0)
     ->orderBy('created_at', 'asc')
@@ -159,17 +158,16 @@
     ->map(fn($t) => ['price' => (float) $t->amount, 'date' => $t->created_at->format('d/m/Y')])
     ->values();
 
-// Se non ci sono transazioni usa il prezzo attuale come punto di partenza
-if ($priceHistory->isEmpty() && $card->price) {
-    $priceHistory = collect([
-        ['price' => (float)$card->price, 'date' => now()->format('d/m/Y')]
-    ]);
-}
+                    // Se non ci sono transazioni usa il prezzo attuale come punto di partenza
+                    if ($priceHistory->isEmpty() && $card->price) {
+                        $priceHistory = collect([['price' => (float) $card->price, 'date' => now()->format('d/m/Y')]]);
+                    }
                 @endphp
                 @if ($priceHistory->count() > 0)
                     <div class="mb-6 p-4 rounded-xl border border-purple-900/50" style="background: rgba(0,0,0,0.2);">
                         <p class="text-gray-500 text-xs uppercase mb-3">Andamento prezzi</p>
                         <div style="position:relative;height:180px">
+
                             <canvas id="priceChart" role="img"
                                 aria-label="Andamento storico del prezzo di {{ $card->name }}"></canvas>
                         </div>
@@ -185,66 +183,61 @@ if ($priceHistory->isEmpty() && $card->price) {
                     <script src="{{ asset('js/chart.umd.js') }}"></script>
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
-                            new Chart(document.getElementById('priceChart'), {
-                                type: 'line',
-                                data: {
-                                    labels: {!! $priceHistory->pluck('date')->toJson() !!},
-                                    datasets: [{
-                                        label: 'Prezzo vendita',
-                                        data: {!! $priceHistory->pluck('price')->map(fn($p) => (int)round((float)$p))->toJson() !!},
-                                        borderColor: '#a855f7',
-                                        backgroundColor: 'rgba(124,58,237,0.08)',
-                                        fill: true,
-                                        tension: 0.4,
-                                        pointRadius: 4,
-                                        pointBackgroundColor: '#a855f7',
-                                        pointBorderColor: '#fff',
-                                        pointBorderWidth: 2,
-                                        borderWidth: 2,
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        },
-                                        tooltip: {
-                                            callbacks: {
-                                                label: ctx => '€' + ctx.parsed.y.toFixed(2)
-                                            }
-                                        }
-                                    },
-                                    scales: {
-                                        x: {
-                                            ticks: {
-                                                font: {
-                                                    size: 10
-                                                },
-                                                color: '#6b7280'
+    new Chart(document.getElementById('priceChart'), {
+                                            type: 'line',
+                                            data: {
+                                                labels: {!! $priceHistory->pluck('date')->toJson() !!},
+                                                datasets: [{
+                                                    label: 'Prezzo vendita',
+                                                    data: {!! $priceHistory->pluck('price')->toJson() !!},
+                                                    borderColor: '#a855f7',
+                                                    backgroundColor: 'rgba(124,58,237,0.08)',
+                                                    fill: true,
+                                                    tension: 0.4,
+                                                    pointRadius: 4,
+                                                    pointBackgroundColor: '#a855f7',
+                                                    pointBorderColor: '#fff',
+                                                    pointBorderWidth: 2,
+                                                    borderWidth: 2,
+                                                }]
+                                                }
                                             },
-                                            grid: {
-                                                color: 'rgba(124,58,237,0.07)'
-                                            }
-                                        },
-                                        y: {
-                                            ticks: {
-                                                font: {
-                                                    size: 10
-                                                },
-                                                color: '#6b7280',
-                                                callback: v => '€' + v,
-                                                stepsize : 1 
-                                            },
-                                            grid: {
-                                                color: 'rgba(124,58,237,0.07)'
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        });
+                                            options: {
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: {
+                                                    legend: {
+                                                        display: false
+                                                    },
+                                                    
+                                                    scales: {
+                                                        x: {
+                                                            ticks: {
+                                                                font: {
+                                                                    size: 10
+                                                                },
+                                                                color: '#6b7280'
+                                                            },
+                                                            grid: {
+                                                                color: 'rgba(124,58,237,0.07)'
+                                                            }
+                                                        },
+                                                        y: {
+                                                            ticks: {
+                                                                font: {
+                                                                    size: 10
+                                                                },
+                                                                color: '#6b7280',
+                                                                callback: v => '€' + v
+                                                            },
+                                                            grid: {
+                                                                color: 'rgba(124,58,237,0.07)'
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                    });
                     </script>
                 @endif
                 <div class="border-t border-purple-900/50 pt-6 mb-6">

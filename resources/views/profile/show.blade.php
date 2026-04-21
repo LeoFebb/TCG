@@ -107,12 +107,28 @@
         </a>
     @else
         <form method="POST" action="{{ route('stripe.payout') }}">
-            @csrf
-            <button type="submit"
-                class="block w-full py-3 px-4 rounded-xl text-sm text-gray-400 border border-purple-900/50 hover:text-white hover:border-purple-500 transition text-center">
-                💸 Richiedi payout
-            </button>
-        </form>
+    @csrf
+    <button type="submit"
+        class="block w-full py-3 px-4 rounded-xl text-sm text-gray-400 border border-purple-900/50 hover:text-white hover:border-purple-500 transition text-center"
+        id="payout-btn" disabled>
+        💸 Richiedi payout (caricamento...)
+    </button>
+</form>
+<script>
+fetch('{{ route('stripe.balance') }}')
+    .then(r => r.json())
+    .then(data => {
+        const btn = document.getElementById('payout-btn');
+        if(data.available > 0) {
+            btn.disabled = false;
+            btn.textContent = '💸 Richiedi payout (€' + data.available.toFixed(2) + ')';
+            btn.classList.remove('opacity-50');
+        } else {
+            btn.textContent = '💸 Nessun fondo disponibile';
+            btn.classList.add('opacity-50');
+        }
+    });
+</script>
     @endif
 @endif
                 </div>
