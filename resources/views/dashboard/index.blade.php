@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard — TCG Vault')
+@section('title', 'Dashboard — TCG SafeSwap')
 
 @section('content')
 
@@ -12,7 +12,7 @@
         <h1 class="text-3xl font-black text-white">
             Ciao, {{ Auth::user()->name }}! 👋
         </h1>
-        <p class="text-gray-500 text-sm mt-1">Ecco un riepilogo della tua attività su TCG Vault</p>
+        <p class="text-gray-500 text-sm mt-1">Ecco un riepilogo della tua attività su TCG SafeSwap</p>
     </div>
 </div>
 

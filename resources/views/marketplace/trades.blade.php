@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Permute — TCG Vault')
+@section('title', 'Permute — TCG SafeSwap')
 
 @section('content')
 

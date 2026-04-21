@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Validatore — TCG Vault')
+@section('title', 'Dashboard Validatore — TCG SafeSwap')
 
 @section('content')
     <div class="max-w-7xl mx-auto px-3 md:px-6 py-6 md:py-10">

@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', $card->name . ' — ' . $card->set_name . ' — TCG Vault')
+@section('title', $card->name . ' — ' . $card->set_name . ' — TCG SafeSwap')
 @section('description', 'Acquista ' . $card->name . ' dal set ' . $card->set_name . '. Condizione: ' . $card->condition
-    . '. Validazione certificata TCG Vault.')
+    . '. Validazione certificata TCG SafeSwap.')
 
 @section('content')
 
@@ -25,30 +25,87 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
             {{-- Immagine --}}
-            <div>
-                <div
-                    class="aspect-[2/3] bg-black/40 rounded-xl overflow-hidden border border-purple-900/50 max-w-sm mx-auto lg:mx-0">
-                    @if (count(is_array($card->images) ? $card->images : json_decode($card->images, true) ?? []))
-                        <img src="{{ str_starts_with($card->images[0], 'http') ? $card->images[0] : Storage::url($card->images[0]) }}"
-                            alt="{{ $card->name }}" class="w-full h-full object-cover">
-                    @else
-                        <div class="w-full h-full flex items-center justify-center">
-                            <span class="text-6xl">&#128293;</span>
+            
+                <div>
+                    @php
+                        $images = is_array($card->images) ? $card->images : json_decode($card->images, true) ?? [];
+                    @endphp
+
+                    {{-- Immagine principale --}}
+                    <div class="aspect-[2/3] bg-black/40 rounded-xl overflow-hidden border border-purple-900/50 max-w-sm mx-auto lg:mx-0 relative"
+                        id="main-image-container">
+                        @if (count($images) > 0)
+                            <img id="main-image"
+                                src="{{ str_starts_with($images[0], 'http') ? $images[0] : Storage::url($images[0]) }}"
+                                alt="{{ $card->name }}" class="w-full h-full object-cover">
+
+                            @if (count($images) > 1)
+                                <button onclick="prevImage()"
+                                    class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
+                                    style="background:rgba(0,0,0,0.6)">‹</button>
+                                <button onclick="nextImage()"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold"
+                                    style="background:rgba(0,0,0,0.6)">›</button>
+                                <div id="image-counter"
+                                    class="absolute bottom-2 right-2 text-xs text-white px-2 py-1 rounded-full"
+                                    style="background:rgba(0,0,0,0.6)">1 / {{ count($images) }}</div>
+                            @endif
+                        @else
+                            <div class="w-full h-full flex items-center justify-center">
+                                <span class="text-6xl">&#128293;</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- Thumbnails --}}
+                    @if (count($images) > 1)
+                        <div class="flex gap-2 mt-3 max-w-sm mx-auto lg:mx-0 overflow-x-auto">
+                            @foreach ($images as $i => $img)
+                                <div onclick="goToImage({{ $i }})"
+                                    class="flex-shrink-0 w-16 aspect-[2/3] bg-black/40 rounded-lg overflow-hidden border cursor-pointer transition"
+                                    id="thumb-{{ $i }}"
+                                    style="border-color: {{ $i === 0 ? '#a855f7' : 'rgba(124,58,237,0.3)' }}">
+                                    <img src="{{ str_starts_with($img, 'http') ? $img : Storage::url($img) }}"
+                                        alt="{{ $card->name }}" class="w-full h-full object-cover">
+                                </div>
+                            @endforeach
                         </div>
                     @endif
                 </div>
 
-                @if (count(is_array($card->images) ? $card->images : json_decode($card->images, true) ?? []))
-                    <div class="grid grid-cols-4 gap-2 mt-3 max-w-sm mx-auto lg:mx-0">
-                        @foreach (array_slice($card->images, 1, 4) as $img)
-                            <div class="aspect-[2/3] bg-black/40 rounded-lg overflow-hidden border border-purple-900/50">
-                                <img src="{{ str_starts_with($img, 'http') ? $img : Storage::url($img) }}"
-                                    alt="{{ $card->name }}" class="w-full h-full object-cover">
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
+                <script>
+                    const images = @json($images);
+                    let currentIndex = 0;
+
+                    function updateImage() {
+                        const img = images[currentIndex];
+                        const src = img.startsWith('http') ? img : '/storage/' + img;
+                        document.getElementById('main-image').src = src;
+                        document.getElementById('image-counter').textContent = (currentIndex + 1) + ' / ' + images.length;
+
+                        images.forEach((_, i) => {
+                            const thumb = document.getElementById('thumb-' + i);
+                            if (thumb) thumb.style.borderColor = i === currentIndex ? '#a855f7' : 'rgba(124,58,237,0.3)';
+                        });
+                    }
+
+                    function nextImage() {
+                        currentIndex = (currentIndex + 1) % images.length;
+                        updateImage();
+                    }
+
+                    function prevImage() {
+                        currentIndex = (currentIndex - 1 + images.length) % images.length;
+                        updateImage();
+                    }
+
+                    function goToImage(index) {
+                        currentIndex = index;
+                        updateImage();
+                    }
+                </script>
+
+                
 
             {{-- Dettagli --}}
             <div>
@@ -91,65 +148,105 @@
                         <p class="text-gray-300 text-sm leading-relaxed">{{ $card->description }}</p>
                     </div>
                 @endif
-                    {{-- Grafico andamento prezzi --}}
-@php
-    $priceHistory = \App\Models\Transaction::where('card_id', $card->id)
-        ->orWhereHas('card', fn($q) => $q->where('name', $card->name))
-        ->where('status', 'completed')
-        ->orderBy('created_at', 'asc')
-        ->get(['amount', 'created_at'])
-        ->map(fn($t) => ['price' => (float)$t->amount, 'date' => $t->created_at->format('d/m/Y')])
-        ->values();
-@endphp
-@if($priceHistory->count() > 1)
-<div class="mb-6 p-4 rounded-xl border border-purple-900/50" style="background: rgba(0,0,0,0.2);">
-    <p class="text-gray-500 text-xs uppercase mb-3">Andamento prezzi</p>
-    <div style="position:relative;height:180px">
-        <canvas id="priceChart" role="img" aria-label="Andamento storico del prezzo di {{ $card->name }}"></canvas>
-    </div>
-    <div class="flex justify-between mt-2">
-        <span class="text-gray-600 text-xs">Min: <span class="text-white">€{{ number_format($priceHistory->min('price'), 2) }}</span></span>
-        <span class="text-gray-600 text-xs">Max: <span class="text-white">€{{ number_format($priceHistory->max('price'), 2) }}</span></span>
-        <span class="text-gray-600 text-xs">Transazioni: <span class="text-white">{{ $priceHistory->count() }}</span></span>
-    </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    new Chart(document.getElementById('priceChart'), {
-        type: 'line',
-        data: {
-            labels: {!! $priceHistory->pluck('date')->toJson() !!},
-            datasets: [{
-                label: 'Prezzo vendita',
-                data: {!! $priceHistory->pluck('price')->toJson() !!},
-                borderColor: '#a855f7',
-                backgroundColor: 'rgba(124,58,237,0.08)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#a855f7',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                borderWidth: 2,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: ctx => '€' + ctx.parsed.y.toFixed(2) } }
-            },
-            scales: {
-                x: { ticks: { font: { size: 10 }, color: '#6b7280' }, grid: { color: 'rgba(124,58,237,0.07)' } },
-                y: { ticks: { font: { size: 10 }, color: '#6b7280', callback: v => '€' + v }, grid: { color: 'rgba(124,58,237,0.07)' } }
-            }
-        }
-    });
-});
-</script>
-@endif
+                {{-- Grafico andamento prezzi --}}
+                @php
+                    $priceHistory = \App\Models\Transaction::where('card_id', $card->id)
+    ->orWhereHas('card', fn($q) => $q->where('name', $card->name))
+    ->where('status', 'completed')
+    ->where('amount', '>', 0)
+    ->orderBy('created_at', 'asc')
+    ->get(['amount', 'created_at'])
+    ->map(fn($t) => ['price' => (float) $t->amount, 'date' => $t->created_at->format('d/m/Y')])
+    ->values();
+
+// Se non ci sono transazioni usa il prezzo attuale come punto di partenza
+if ($priceHistory->isEmpty() && $card->price) {
+    $priceHistory = collect([
+        ['price' => (float)$card->price, 'date' => now()->format('d/m/Y')]
+    ]);
+}
+                @endphp
+                @if ($priceHistory->count() > 0)
+                    <div class="mb-6 p-4 rounded-xl border border-purple-900/50" style="background: rgba(0,0,0,0.2);">
+                        <p class="text-gray-500 text-xs uppercase mb-3">Andamento prezzi</p>
+                        <div style="position:relative;height:180px">
+                            <canvas id="priceChart" role="img"
+                                aria-label="Andamento storico del prezzo di {{ $card->name }}"></canvas>
+                        </div>
+                        <div class="flex justify-between mt-2">
+                            <span class="text-gray-600 text-xs">Min: <span
+                                    class="text-white">€{{ number_format($priceHistory->min('price'), 2) }}</span></span>
+                            <span class="text-gray-600 text-xs">Max: <span
+                                    class="text-white">€{{ number_format($priceHistory->max('price'), 2) }}</span></span>
+                            <span class="text-gray-600 text-xs">Transazioni: <span
+                                    class="text-white">{{ $priceHistory->count() }}</span></span>
+                        </div>
+                    </div>
+                    <script src="{{ asset('js/chart.umd.js') }}"></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            new Chart(document.getElementById('priceChart'), {
+                                type: 'line',
+                                data: {
+                                    labels: {!! $priceHistory->pluck('date')->toJson() !!},
+                                    datasets: [{
+                                        label: 'Prezzo vendita',
+                                        data: {!! $priceHistory->pluck('price')->map(fn($p) => (int)round((float)$p))->toJson() !!},
+                                        borderColor: '#a855f7',
+                                        backgroundColor: 'rgba(124,58,237,0.08)',
+                                        fill: true,
+                                        tension: 0.4,
+                                        pointRadius: 4,
+                                        pointBackgroundColor: '#a855f7',
+                                        pointBorderColor: '#fff',
+                                        pointBorderWidth: 2,
+                                        borderWidth: 2,
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: ctx => '€' + ctx.parsed.y.toFixed(2)
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        x: {
+                                            ticks: {
+                                                font: {
+                                                    size: 10
+                                                },
+                                                color: '#6b7280'
+                                            },
+                                            grid: {
+                                                color: 'rgba(124,58,237,0.07)'
+                                            }
+                                        },
+                                        y: {
+                                            ticks: {
+                                                font: {
+                                                    size: 10
+                                                },
+                                                color: '#6b7280',
+                                                callback: v => '€' + v,
+                                                stepsize : 1 
+                                            },
+                                            grid: {
+                                                color: 'rgba(124,58,237,0.07)'
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    </script>
+                @endif
                 <div class="border-t border-purple-900/50 pt-6 mb-6">
 
                     @if ($card->price)
@@ -168,31 +265,38 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="text-gray-400 text-sm">&#8364;5.90</span>
                             </div>
                         </div>
-                        @if(isset($otherSellers) && $otherSellers->count() > 0)
-    <div class="mb-4 rounded-xl border border-purple-900/50 p-4" style="background: rgba(45,17,84,0.2);">
-        <p class="text-purple-400 font-bold text-sm mb-3">&#128101; {{ $otherSellers->count() + 1 }} venditori disponibili</p>
-        <div class="space-y-2">
-            {{-- Venditore corrente --}}
-            <div class="flex justify-between items-center p-2 rounded-lg border border-purple-500/50" style="background: rgba(124,58,237,0.1);">
-                <div>
-                    <p class="text-white text-sm font-bold">{{ $card->owner->name }}</p>
-                    <p class="text-gray-500 text-xs">{{ $card->condition }}</p>
-                </div>
-                <span class="text-purple-400 font-bold">&#8364;{{ number_format($card->price, 2) }}</span>
-            </div>
-            {{-- Altri venditori --}}
-            @foreach($otherSellers as $seller)
-                <a href="{{ route('marketplace.show', $seller) }}" class="flex justify-between items-center p-2 rounded-lg border border-purple-900/30 hover:border-purple-500/50 transition" style="background: rgba(45,17,84,0.2);">
-                    <div>
-                        <p class="text-white text-sm">{{ $seller->owner->name }}</p>
-                        <p class="text-gray-500 text-xs">{{ $seller->condition }}</p>
-                    </div>
-                    <span class="text-green-400 font-bold">&#8364;{{ number_format($seller->price, 2) }}</span>
-                </a>
-            @endforeach
-        </div>
-    </div>
-@endif
+                        @if (isset($otherSellers) && $otherSellers->count() > 0)
+                            <div class="mb-4 rounded-xl border border-purple-900/50 p-4"
+                                style="background: rgba(45,17,84,0.2);">
+                                <p class="text-purple-400 font-bold text-sm mb-3">&#128101;
+                                    {{ $otherSellers->count() + 1 }} venditori disponibili</p>
+                                <div class="space-y-2">
+                                    {{-- Venditore corrente --}}
+                                    <div class="flex justify-between items-center p-2 rounded-lg border border-purple-500/50"
+                                        style="background: rgba(124,58,237,0.1);">
+                                        <div>
+                                            <p class="text-white text-sm font-bold">{{ $card->owner->name }}</p>
+                                            <p class="text-gray-500 text-xs">{{ $card->condition }}</p>
+                                        </div>
+                                        <span
+                                            class="text-purple-400 font-bold">&#8364;{{ number_format($card->price, 2) }}</span>
+                                    </div>
+                                    {{-- Altri venditori --}}
+                                    @foreach ($otherSellers as $seller)
+                                        <a href="{{ route('marketplace.show', $seller) }}"
+                                            class="flex justify-between items-center p-2 rounded-lg border border-purple-900/30 hover:border-purple-500/50 transition"
+                                            style="background: rgba(45,17,84,0.2);">
+                                            <div>
+                                                <p class="text-white text-sm">{{ $seller->owner->name }}</p>
+                                                <p class="text-gray-500 text-xs">{{ $seller->condition }}</p>
+                                            </div>
+                                            <span
+                                                class="text-green-400 font-bold">&#8364;{{ number_format($seller->price, 2) }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                         @auth
                             @if ($card->user_id !== auth()->id() && auth()->user()->role !== 'validator')
                                 <a href="{{ route('checkout', $card) }}"
@@ -270,17 +374,21 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </select>
                                         </div>
                                         <div class="mb-3">
-    <label class="block text-gray-400 text-sm mb-2">&#128247; Foto della tua carta *</label>
-    <label for="offered_card_image" class="block border-2 border-dashed border-purple-800/50 rounded-xl p-4 text-center cursor-pointer hover:border-purple-500 transition">
-        <div id="offered-preview" class="hidden mb-3">
-            <img id="offered-img" src="" class="max-h-40 mx-auto rounded-lg">
-        </div>
-        <p class="text-gray-400 text-sm" id="offered-text">Clicca per caricare la foto della tua carta</p>
-        <p class="text-gray-600 text-xs mt-1">JPEG, PNG · Max 5MB</p>
-    </label>
-    <input type="file" id="offered_card_image" name="offered_card_image" accept="image/*" required
-       style="display:none;" onchange="previewOfferedCard(this)">
-</div>
+                                            <label class="block text-gray-400 text-sm mb-2">&#128247; Foto della tua carta
+                                                *</label>
+                                            <label for="offered_card_image"
+                                                class="block border-2 border-dashed border-purple-800/50 rounded-xl p-4 text-center cursor-pointer hover:border-purple-500 transition">
+                                                <div id="offered-preview" class="hidden mb-3">
+                                                    <img id="offered-img" src="" class="max-h-40 mx-auto rounded-lg">
+                                                </div>
+                                                <p class="text-gray-400 text-sm" id="offered-text">Clicca per caricare la foto
+                                                    della tua carta</p>
+                                                <p class="text-gray-600 text-xs mt-1">JPEG, PNG · Max 5MB</p>
+                                            </label>
+                                            <input type="file" id="offered_card_image" name="offered_card_image"
+                                                accept="image/*" required style="display:none;"
+                                                onchange="previewOfferedCard(this)">
+                                        </div>
                                         <button type="submit" <button type="submit"
                                             class="w-full py-3 rounded-xl font-bold text-white text-sm border border-blue-700 hover:bg-blue-900/30 transition">
                                             &#128260; Proponi permuta
@@ -300,58 +408,10 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
     <script>
-function previewOfferedCard(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        const file = input.files[0];
-        reader.onload = function(e) {
-            document.getElementById('offered-img').src = e.target.result;
-            document.getElementById('offered-preview').classList.remove('hidden');
-            document.getElementById('offered-text').textContent = file.name;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-</script>
-<script>
-function previewOfferedCard(input) {
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        const file = input.files[0];
-        reader.onload = function(e) {
-            document.getElementById('offered-img').src = e.target.result;
-            document.getElementById('offered-preview').classList.remove('hidden');
-            document.getElementById('offered-text').textContent = file.name;
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-function handleTradeSelect(select) {
-    const manualInput = document.getElementById('trade-manual-input');
-    if (select.value === '__manual__') {
-        manualInput.classList.remove('hidden');
-        manualInput.required = true;
-        select.name = '';
-        manualInput.name = 'offered_card_name';
-        manualInput.focus();
-    } else {
-        manualInput.classList.add('hidden');
-        manualInput.required = false;
-        select.name = 'offered_card_name';
-        manualInput.name = '';
-    }
-}
-</script>
-    @push('scripts')
-<script defer>
-window.addEventListener('load', function() {
-    const offeredInput = document.getElementById('offered_card_image');
-    if (offeredInput) {
-        offeredInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
+        function previewOfferedCard(input) {
+            if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                const file = this.files[0];
+                const file = input.files[0];
                 reader.onload = function(e) {
                     document.getElementById('offered-img').src = e.target.result;
                     document.getElementById('offered-preview').classList.remove('hidden');
@@ -359,42 +419,90 @@ window.addEventListener('load', function() {
                 };
                 reader.readAsDataURL(file);
             }
-        });
-    }
-});
+        }
+    </script>
+    <script>
+        function previewOfferedCard(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                const file = input.files[0];
+                reader.onload = function(e) {
+                    document.getElementById('offered-img').src = e.target.result;
+                    document.getElementById('offered-preview').classList.remove('hidden');
+                    document.getElementById('offered-text').textContent = file.name;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
-function handleTradeSelect(select) {
-    const manualInput = document.getElementById('trade-manual-input');
-    if (select.value === '__manual__') {
-        manualInput.classList.remove('hidden');
-        manualInput.required = true;
-        select.name = '';
-        manualInput.name = 'offered_card_name';
-        manualInput.focus();
-    } else {
-        manualInput.classList.add('hidden');
-        manualInput.required = false;
-        select.name = 'offered_card_name';
-        manualInput.name = '';
-    }
-}
+        function handleTradeSelect(select) {
+            const manualInput = document.getElementById('trade-manual-input');
+            if (select.value === '__manual__') {
+                manualInput.classList.remove('hidden');
+                manualInput.required = true;
+                select.name = '';
+                manualInput.name = 'offered_card_name';
+                manualInput.focus();
+            } else {
+                manualInput.classList.add('hidden');
+                manualInput.required = false;
+                select.name = 'offered_card_name';
+                manualInput.name = '';
+            }
+        }
+    </script>
+    @push('scripts')
+        <script defer>
+            window.addEventListener('load', function() {
+                const offeredInput = document.getElementById('offered_card_image');
+                if (offeredInput) {
+                    offeredInput.addEventListener('change', function() {
+                        if (this.files && this.files[0]) {
+                            const reader = new FileReader();
+                            const file = this.files[0];
+                            reader.onload = function(e) {
+                                document.getElementById('offered-img').src = e.target.result;
+                                document.getElementById('offered-preview').classList.remove('hidden');
+                                document.getElementById('offered-text').textContent = file.name;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+            });
 
-document.getElementById('trade-manual-input')?.addEventListener('blur', function() {
-    const cardName = this.value.trim();
-    if (cardName.length > 2) {
-        fetch('{{ route("catalog.add-card") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                card_name: cardName,
-                category: '{{ $card->tcg_category }}'
-            })
-        });
-    }
-});
-</script>
-@endpush
+            function handleTradeSelect(select) {
+                const manualInput = document.getElementById('trade-manual-input');
+                if (select.value === '__manual__') {
+                    manualInput.classList.remove('hidden');
+                    manualInput.required = true;
+                    select.name = '';
+                    manualInput.name = 'offered_card_name';
+                    manualInput.focus();
+                } else {
+                    manualInput.classList.add('hidden');
+                    manualInput.required = false;
+                    select.name = 'offered_card_name';
+                    manualInput.name = '';
+                }
+            }
+
+            document.getElementById('trade-manual-input')?.addEventListener('blur', function() {
+                const cardName = this.value.trim();
+                if (cardName.length > 2) {
+                    fetch('{{ route('catalog.add-card') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            card_name: cardName,
+                            category: '{{ $card->tcg_category }}'
+                        })
+                    });
+                }
+            });
+        </script>
+    @endpush
 @endsection

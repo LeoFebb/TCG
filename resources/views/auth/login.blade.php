@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accedi — TCG Vault</title>
+    <title>Accedi — TCG SafeSwap</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center" 
@@ -20,7 +20,7 @@
             </div>
             <div>
                 <span class="text-white font-black text-2xl">TCG</span>
-                <span class="text-purple-400 font-black text-2xl"> Vault</span>
+                <span class="text-purple-400 font-black text-2xl"> SafeSwap</span>
             </div>
         </a>
         <p class="text-gray-500 text-sm mt-3">Marketplace TCG Certificato</p>
@@ -31,7 +31,7 @@
          style="background: rgba(45, 17, 84, 0.4); backdrop-filter: blur(10px);">
         
         <h1 class="text-2xl font-black text-white mb-2">Bentornato!</h1>
-        <p class="text-gray-500 text-sm mb-8">Accedi al tuo account TCG Vault</p>
+        <p class="text-gray-500 text-sm mb-8">Accedi al tuo account TCG SafeSwap</p>
 
         @if(session('status'))
             <div class="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 text-sm rounded-lg mb-6">

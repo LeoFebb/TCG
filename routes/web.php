@@ -14,6 +14,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\StripeConnectController;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
@@ -158,6 +160,19 @@ Route::post('/dismiss-debt-modal', function(\Illuminate\Http\Request $request) {
     session(['debt_modal_dismissed' => true]);
     return redirect($request->input('redirect', '/'));
 })->name('dismiss.debt.modal')->middleware('auth');
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/cards', [AdminController::class, 'cards'])->name('cards');
+    Route::post('/cards/{card}/remove', [AdminController::class, 'removeCard'])->name('cards.remove');
+    Route::post('/cards/{card}/restore', [AdminController::class, 'restoreCard'])->name('cards.restore');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/stripe/onboard', [StripeConnectController::class, 'onboard'])->name('stripe.onboard');
+    Route::get('/stripe/onboard/complete', [StripeConnectController::class, 'onboardComplete'])->name('stripe.onboard.complete');
+    Route::post('/stripe/payout', [StripeConnectController::class, 'payout'])->name('stripe.payout');
+    Route::get('/stripe/balance', [StripeConnectController::class, 'balance'])->name('stripe.balance');
+});
 
 // Webhook Stripe
 Route::post('/stripe/webhook', [EscrowController::class, 'handleWebhook'])->name('stripe.webhook');

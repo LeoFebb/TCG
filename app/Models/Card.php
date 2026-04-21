@@ -10,7 +10,6 @@ class Card extends Model
     protected $fillable = ['user_id', 'name', 'set_name', 'card_number', 'tcg_category', 'rarity', 'condition', 'price', 'available_for_trade', 'type', 'status', 'is_validated', 'images', 'description'];
 
     protected $casts = [
-        
         'price' => 'decimal:2',
         'available_for_trade' => 'boolean',
         'is_validated' => 'boolean',
@@ -42,6 +41,11 @@ class Card extends Model
             return $value;
         }
         return json_decode($value, true) ?? [];
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(\App\Models\Transaction::class);
     }
 
     public function scopeForTrade($query)

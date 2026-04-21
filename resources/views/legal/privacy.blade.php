@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Privacy Policy — TCG Vault')
+@section('title', 'Privacy Policy — TCG SafeSwap')
 
 @section('content')
     <div class="max-w-3xl mx-auto px-6 py-16">
@@ -11,7 +11,7 @@
 
             <div class="rounded-xl border border-purple-900/50 p-6" style="background: rgba(45,17,84,0.2);">
                 <h2 class="text-xl font-black text-white mb-3">1. Titolare del trattamento</h2>
-                <p>TCG Vault è il titolare del trattamento dei dati personali raccolti attraverso questa piattaforma. Per
+                <p>TCG SafeSwap è il titolare del trattamento dei dati personali raccolti attraverso questa piattaforma. Per
                     qualsiasi informazione: <span class="text-purple-400">privacy@tcgvault.it</span></p>
             </div>
 

@@ -29,7 +29,7 @@ class CardController extends Controller
             'images.*' => 'required|image|mimes:jpeg,jpg,png|max:3072',
         ]);
 
-        $validated['is_validated'] = false;
+        $validated['is_validated'] = true;
 
         // Salva le immagini e raccoglie i percorsi
         $imagePaths = [];
@@ -40,7 +40,7 @@ class CardController extends Controller
         $validated['user_id'] = Auth::id();
         $validated['available_for_trade'] = $request->has('available_for_trade');
         $validated['status'] = 'available';
-        $validated['images'] = $imagePaths;
+        $validated['images'] = json_encode($imagePaths);
 
         Card::create($validated);
 

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Le mie carte — TCG Vault')
+@section('title', 'Le mie carte — TCG SafeSwap')
 
 @section('content')
 
@@ -121,7 +121,7 @@
         </div>
     </div>
 
-    @push('scripts')
+    
         <script>
             function openDeleteModal(id, name) {
                 document.getElementById('cardName').textContent = name;
@@ -137,6 +137,6 @@
                 if (e.target === this) closeDeleteModal();
             });
         </script>
-    @endpush
+    
 
 @endsection

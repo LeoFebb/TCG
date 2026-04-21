@@ -179,7 +179,7 @@
         {{-- Header --}}
         <div class="header">
             <div>
-                <div class="logo">&#127183; TCG VAULT</div>
+                <div class="logo">&#127183; TCG SafeSwap</div>
                 <div style="font-size: 8px; color: #555;">Marketplace TCG Certificato</div>
             </div>
             <div style="text-align: center;">
@@ -238,7 +238,7 @@
                     @endif
                 </div>
                 <div style="text-align: center;">
-                    <div class="badge"> CERTIFICATA TCG VAULT</div>
+                    <div class="badge"> CERTIFICATA TCG SafeSwap</div>
                     @if (!isset($offered_card_name) || !$offered_card_name)
                         <div style="font-size: 7px; color: #888; margin-top: 2px;">Rarita:
                             {{ $transaction->card->rarity }}</div>
@@ -251,7 +251,7 @@
             <div class="instructions">{{ $istruzioni }}</div>
 
             {{-- Footer --}}
-            <div class="footer">TCG Vault &copy; {{ date('Y') }} — support@tcgvault.it — Transazione
+            <div class="footer">TCG SafeSwap &copy; {{ date('Y') }} — support@tcgvault.it — Transazione
                 #{{ $transaction->id }}</div>
 
         </div>

@@ -1,13 +1,13 @@
 @extends('layouts.app')
-@section('title', 'Marketplace — Tutte le carte | TCG Vault')
+@section('title', 'Marketplace — Tutte le carte | TCG SafeSwap')
 @section('description',
-    'Sfoglia migliaia di carte da gioco disponibili su TCG Vault. Pokémon, Magic, Yu-Gi-Oh!, One
+    'Sfoglia migliaia di carte da gioco disponibili su TCG SafeSwap. Pokémon, Magic, Yu-Gi-Oh!, One
     Piece e molto altro. Acquisto sicuro con sistema escrow.')
 @section('keywords',
     'marketplace carte, acquista carte pokemon, magic the gathering vendita, yugioh compra, carte rare
     online')
 
-@section('title', 'Marketplace — TCG Vault')
+@section('title', 'Marketplace — TCG SafeSwap')
 
 @section('content')
 
@@ -105,7 +105,7 @@
                 <div>
                     <label class="block text-gray-500 text-xs mb-1 uppercase tracking-wide">Ordina per</label>
                     <select name="sort"  class="w-full border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none" style="background: rgba(0,0,0,0.4);">
-                        class="bg-black/40 border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-purple-500">
+                        <class="bg-black/40 border border-purple-800/50 text-gray-300 px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-purple-500">
                         <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Più recenti</option>
                         <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Prezzo crescente
                         </option>
@@ -121,7 +121,7 @@
 
                 @if (request()->hasAny(['category', 'type', 'max_price', 'condition', 'sort']))
                     <a href="{{ route('marketplace.index') }}"
-                        class="px-5 py-2.5 rounded-lg text-sm text-gray-400 border border-gray-700 hover:text-white transition">
+                        class="bg-red-400 px-5 py-2.5 rounded-lg text-sm text-black border border-gray-700 hover:text-white transition">
                         ✕ Reset
                     </a>
                 @endif

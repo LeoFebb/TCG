@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'TCG Vault - Marketplace TCG Certificato')
-@section('description', 'Compra, vendi e scambia carte da gioco rare su TCG Vault. Sistema escrow sicuro, validazione
+@section('title', 'TCG SafeSwap - Marketplace TCG Certificato')
+@section('description', 'Compra, vendi e scambia carte da gioco rare su TCG SafeSwap. Sistema escrow sicuro, validazione
     certificata.')
 @section('keywords', 'marketplace tcg, carte pokemon rare, magic the gathering, yugioh, one piece card game, dragon ball
     super, naruto card game')
@@ -26,7 +26,7 @@
                 </span>
             </h1>
             <p class="text-gray-400 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-                Compra, vendi e scambia carte da gioco rare con la protezione del sistema escrow TCG Vault.
+                Compra, vendi e scambia carte da gioco rare con la protezione del sistema escrow TCG SafeSwap.
                 Ogni transazione e validata da esperti indipendenti certificati.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -144,7 +144,7 @@
     {{-- COME FUNZIONA --}}
     <div class="max-w-7xl mx-auto px-3 md:px-6 py-8 md:py-12">
         <div class="rounded-2xl p-10 border border-purple-900/50" style="background: rgba(45, 17, 84, 0.2);">
-            <h2 class="text-2xl font-black text-white text-center mb-10">Come funziona TCG Vault</h2>
+            <h2 class="text-2xl font-black text-white text-center mb-10">Come funziona TCG SafeSwap</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div class="text-center">
                     <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"
@@ -196,7 +196,7 @@
             style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.1));">
             <h2 class="text-3xl font-black text-white mb-3">I tuoi soldi sono al sicuro &#128274;</h2>
             <p class="text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
-                TCG Vault usa un sistema di pagamento in escrow. I fondi vengono
+                TCG SafeSwap usa un sistema di pagamento in escrow. I fondi vengono
                 trattenuti dalla piattaforma e rilasciati al venditore solo dopo che un validatore
                 certificato ha confermato l'autenticita della carta.
             </p>

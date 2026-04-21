@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', $info['nome'] . ' — Carte in vendita | TCG Vault')
-@section('description', 'Acquista carte ' . $info['nome'] . ' certificate su TCG Vault. ' . $info['desc'] . ' Pagamento
+@section('title', $info['nome'] . ' — Carte in vendita | TCG SafeSwap')
+@section('description', 'Acquista carte ' . $info['nome'] . ' certificate su TCG SafeSwap. ' . $info['desc'] . ' Pagamento
     sicuro con sistema escrow.')
 @section('keywords', strtolower($info['nome']) . ', carte ' . strtolower($info['nome']) . ' rare, acquista ' .
     strtolower($info['nome']) . ', ' . strtolower($info['nome']) . ' marketplace')
 
-@section('title', $info['nome'] . ' — TCG Vault')
+@section('title', $info['nome'] . ' — TCG SafeSwap')
 
 @section('content')
 

@@ -11,7 +11,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'is_verified_validator', 'stripe_connect_id', 'identity_document_path', 'tcg_categories', 'validation_notes', 'address', 'city', 'zip', 'country', 'phone', 'address', 'city', 'zip', 'country', 'phone', 'profile_photo', 'address', 'city', 'zip', 'country', 'phone', 'vat_number', 'profile_photo', "has_shipping_debt", "shipping_debt_amount"];
+    protected $fillable = ['name', 'email', 'password', 'role', 'is_verified_validator', 'stripe_connect_id', 'identity_document_path', 'tcg_categories', 'validation_notes', 'address', 'city', 'zip', 'country', 'phone', 'address', 'city', 'zip', 'country', 'phone', 'profile_photo', 'address', 'city', 'zip', 'country', 'phone', 'vat_number', 'profile_photo', "has_shipping_debt", "shipping_debt_amount", "stripe_bank_account_id", "stripe_onboarding_complete"];
 
     protected $hidden = ['password', 'remember_token'];
 

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Vendi una carta — TCG Vault')
+@section('title', 'Vendi una carta — TCG SafeSwap')
 
 @section('content')
 <div class="max-w-2xl mx-auto px-3 md:px-6">

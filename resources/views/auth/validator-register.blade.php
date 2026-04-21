@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Registrazione Validatore — TCG Vault')
+@section('title', 'Registrazione Validatore — TCG SafeSwap')
 
 @section('content')
     <div class="max-w-2xl mx-auto px-3 md:px-6 py-8 md:py-14">
@@ -18,7 +18,7 @@
                 Diventa <em class="text-vault-gold">Validatore</em> TCG
             </h1>
             <p class="text-vault-muted text-sm mt-3 max-w-md mx-auto leading-relaxed">
-                I validatori TCG Vault sono esperti certificati che garantiscono
+                I validatori TCG SafeSwap sono esperti certificati che garantiscono
                 l'autenticità delle carte nel marketplace. Ogni candidatura viene
                 esaminata manualmente dal nostro team.
             </p>
@@ -266,7 +266,7 @@
                         Accetto i
                         <a href="#" class="text-vault-gold hover:underline">Termini e Condizioni per i
                             Validatori</a>
-                        di TCG Vault, inclusi gli obblighi di riservatezza, i tempi massimi di validazione
+                        di TCG SafeSwap, inclusi gli obblighi di riservatezza, i tempi massimi di validazione
                         e le conseguenze per validazioni errate o fraudolente.
                         Confermo che le informazioni fornite sono veritiere e complete.
                     </span>
@@ -340,11 +340,6 @@
             handleFileSelect(input);
         });
 
-        function openFilePicker(e) {
-    // Non aprire il file picker se si clicca sul pulsante di rimozione
-    if (e.target.closest('button')) return;
-    document.getElementById('images').click();
-    }
     </script>
 
 @endsection

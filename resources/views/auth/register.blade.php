@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrati — TCG Vault</title>
+    <title>Registrati — TCG SafeSwap</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center py-10"
@@ -20,7 +20,7 @@
             </div>
             <div>
                 <span class="text-white font-black text-2xl">TCG</span>
-                <span class="text-purple-400 font-black text-2xl"> Vault</span>
+                <span class="text-purple-400 font-black text-2xl"> SafeSwap</span>
             </div>
         </a>
         <p class="text-gray-500 text-sm mt-3">Marketplace TCG Certificato</p>
@@ -31,7 +31,7 @@
          style="background: rgba(45, 17, 84, 0.4); backdrop-filter: blur(10px);">
 
         <h1 class="text-2xl font-black text-white mb-2">Crea un account</h1>
-        <p class="text-gray-500 text-sm mb-8">Unisciti alla community TCG Vault</p>
+        <p class="text-gray-500 text-sm mb-8">Unisciti alla community TCG SafeSwap</p>
 
         <form method="POST" action="{{ route('register') }}" class="space-y-5">
             @csrf
@@ -84,7 +84,7 @@
             {{-- Vantaggi --}}
             <div class="rounded-xl p-4 border border-purple-900/30"
                  style="background: rgba(124,58,237,0.1);">
-                <p class="text-purple-400 text-xs font-bold mb-2">✨ Con TCG Vault puoi:</p>
+                <p class="text-purple-400 text-xs font-bold mb-2">✨ Con TCG SafeSwap puoi:</p>
                 <ul class="text-gray-500 text-xs space-y-1">
                     <li>🃏 Vendere le tue carte in modo sicuro</li>
                     <li>🔄 Scambiare carte con altri collezionisti</li>

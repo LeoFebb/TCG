@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Il mio profilo — TCG Vault')
+@section('title', 'Il mio profilo — TCG SafeSwap')
 
 @section('content')
 
@@ -67,21 +67,22 @@
                     </div>
                 </div>
                 {{-- Debito spedizione --}}
-@if(auth()->user()->has_shipping_debt)
-    <div class="rounded-xl border border-red-800/50 p-5 mt-6" style="background: rgba(127,29,29,0.15);">
-        <p class="text-red-400 font-bold text-sm mb-2">⚠️ Account sospeso</p>
-        <p class="text-gray-400 text-xs mb-3">
-            Hai un debito di spedizione di 
-            <span class="text-red-400 font-bold">€{{ number_format(auth()->user()->shipping_debt_amount, 2) }}</span>
-            da saldare per operare sul sito.
-        </p>
-        <a href="{{ route('shipping.debt.pay') }}" 
-           class="block w-full py-2 rounded-xl font-bold text-white text-sm text-center"
-           style="background: linear-gradient(135deg, #dc2626, #ef4444);">
-            Paga ora
-        </a>
-    </div>
-@endif
+                @if (auth()->user()->has_shipping_debt)
+                    <div class="rounded-xl border border-red-800/50 p-5 mt-6" style="background: rgba(127,29,29,0.15);">
+                        <p class="text-red-400 font-bold text-sm mb-2">⚠️ Account sospeso</p>
+                        <p class="text-gray-400 text-xs mb-3">
+                            Hai un debito di spedizione di
+                            <span
+                                class="text-red-400 font-bold">€{{ number_format(auth()->user()->shipping_debt_amount, 2) }}</span>
+                            da saldare per operare sul sito.
+                        </p>
+                        <a href="{{ route('shipping.debt.pay') }}"
+                            class="block w-full py-2 rounded-xl font-bold text-white text-sm text-center"
+                            style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+                            Paga ora
+                        </a>
+                    </div>
+                @endif
                 {{-- Link rapidi --}}
                 <div class="mt-6 space-y-2">
                     <a href="{{ route('cards.my') }}"
@@ -98,6 +99,22 @@
                             &#128202; Dashboard
                         </a>
                     @endif
+                    @if($user->role !== 'validator')
+    @if(!$user->stripe_connect_id || !$user->stripe_onboarding_complete)
+        <a href="{{ route('stripe.onboard') }}"
+            class="block w-full py-3 px-4 rounded-xl text-sm text-gray-400 border border-purple-900/50 hover:text-white hover:border-purple-500 transition text-center">
+            🏦 Collega conto bancario
+        </a>
+    @else
+        <form method="POST" action="{{ route('stripe.payout') }}">
+            @csrf
+            <button type="submit"
+                class="block w-full py-3 px-4 rounded-xl text-sm text-gray-400 border border-purple-900/50 hover:text-white hover:border-purple-500 transition text-center">
+                💸 Richiedi payout
+            </button>
+        </form>
+    @endif
+@endif
                 </div>
             </div>
 
@@ -109,7 +126,7 @@
                     <form method="POST" action="{{ route('user.profile.update') }}" enctype="multipart/form-data"
                         class="space-y-5">
                         @csrf
-                        
+
 
                         {{-- Foto profilo --}}
                         <div>
@@ -228,10 +245,6 @@
             </div>
         </div>
     </div>
-
-@endsection
-
-@push('scripts')
     <script>
         function previewPhoto(input) {
             if (input.files && input.files[0]) {
@@ -244,5 +257,4 @@
             }
         }
     </script>
-@endpush
-
+@endsection

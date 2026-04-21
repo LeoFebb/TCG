@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password dimenticata — TCG Vault</title>
+    <title>Password dimenticata — TCG SafeSwap</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen flex items-center justify-center"
@@ -20,7 +20,7 @@
             </div>
             <div>
                 <span class="text-white font-black text-2xl">TCG</span>
-                <span class="text-purple-400 font-black text-2xl"> Vault</span>
+                <span class="text-purple-400 font-black text-2xl"> SafeSwap</span>
             </div>
         </a>
         <p class="text-gray-500 text-sm mt-3">Marketplace TCG Certificato</p>

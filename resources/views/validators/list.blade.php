@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Validatori Certificati — TCG Vault')
+@section('title', 'Validatori Certificati — TCG SafeSwap')
 @section('description',
-    'Scopri i validatori certificati TCG Vault. Esperti indipendenti che certificano autenticità e
+    'Scopri i validatori certificati TCG SafeSwap. Esperti indipendenti che certificano autenticità e
     condizioni delle carte.')
 @section('keywords', 'validatori tcg, esperti carte, certificazione carte pokemon, magic the gathering validazione')
 
@@ -16,7 +16,7 @@
                 🛡 Validatori Certificati
             </h1>
             <p class="text-gray-400 max-w-xl mx-auto">
-                I nostri validatori sono esperti indipendenti certificati da TCG Vault.
+                I nostri validatori sono esperti indipendenti certificati da TCG SafeSwap.
                 Ogni carta passa attraverso la loro verifica prima di arrivare all'acquirente.
             </p>
         </div>
@@ -132,7 +132,7 @@
             <div class="rounded-2xl p-20 text-center border border-purple-900/50" style="background: rgba(45,17,84,0.2);">
                 <div class="text-6xl mb-4">🛡</div>
                 <h3 class="text-2xl font-bold text-white mb-2">Nessun validatore ancora</h3>
-                <p class="text-gray-500 mb-6">Vuoi diventare un validatore certificato TCG Vault?</p>
+                <p class="text-gray-500 mb-6">Vuoi diventare un validatore certificato TCG SafeSwap?</p>
                 <a href="{{ route('validator.register.form') }}"
                     class="px-6 py-3 rounded-xl font-bold text-white inline-block"
                     style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
@@ -145,7 +145,7 @@
         <div class="rounded-2xl p-8 border border-purple-700/50 text-center mt-10"
             style="background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(168,85,247,0.1));">
             <h2 class="text-2xl font-black text-white mb-2">Sei un esperto TCG?</h2>
-            <p class="text-gray-400 mb-6">Unisciti al team di validatori TCG Vault e guadagna certificando carte rare.</p>
+            <p class="text-gray-400 mb-6">Unisciti al team di validatori TCG SafeSwap e guadagna certificando carte rare.</p>
             <a href="{{ route('validator.register.form') }}" class="px-8 py-3 rounded-xl font-bold text-white inline-block"
                 style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
                 Diventa Validatore →

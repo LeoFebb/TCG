@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Acquista — ' . $card->name . ' — TCG Vault')
+@section('title', 'Acquista — ' . $card->name . ' — TCG SafeSwap')
 
 @section('content')
 
@@ -196,7 +196,7 @@
                                 <label for="accept-terms" class="text-xs text-gray-500 leading-relaxed cursor-pointer">
                                     Comprendo che il pagamento sarà trattenuto in escrow e rilasciato al venditore
                                     solo dopo la validazione fisica della carta. In caso di controversia coopererò
-                                    con il processo di risoluzione TCG Vault.
+                                    con il processo di risoluzione TCG SafeSwap.
                                 </label>
                             </div>
                             {{-- Scelta validatore --}}

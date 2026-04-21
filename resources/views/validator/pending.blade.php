@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Candidatura in Revisione — TCG Vault')
+@section('title', 'Candidatura in Revisione — TCG SafeSwap')
 @section('content')
 <div class="max-w-xl mx-auto px-6 py-24 text-center animate-in">
     <div class="w-20 h-20 border border-vault-gold/50 flex items-center justify-center mx-auto mb-8">
@@ -24,7 +24,7 @@
     <div class="text-left space-y-4">
         @foreach([
             ['num' => '01', 'title' => 'Candidatura inviata ✓', 'desc' => 'I tuoi dati e il documento d\'identità sono stati ricevuti.', 'done' => true],
-            ['num' => '02', 'title' => 'Revisione dell\'admin', 'desc' => 'Il team TCG Vault verifica le tue credenziali e competenze.', 'done' => false],
+            ['num' => '02', 'title' => 'Revisione dell\'admin', 'desc' => 'Il team TCG SafeSwap verifica le tue credenziali e competenze.', 'done' => false],
             ['num' => '03', 'title' => 'Attivazione account', 'desc' => 'Una volta approvato, avrai accesso alla dashboard validatore.', 'done' => false],
         ] as $step)
             <div class="flex items-start gap-4 p-4 border {{ $step['done'] ? 'border-vault-gold/30 bg-yellow-950/10' : 'border-vault-border' }}">

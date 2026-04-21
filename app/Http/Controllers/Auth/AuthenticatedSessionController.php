@@ -28,9 +28,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if (auth()->user()->role === 'validator') {
-            return redirect()->route('validator.dashboard');
-        }
+        if (auth()->user()->role === 'admin') {
+    return redirect()->route('admin.cards');
+}
+if (auth()->user()->role === 'validator') {
+    return redirect()->route('validator.dashboard');
+}
 
         return redirect()->intended(route('home', absolute: false));
     }

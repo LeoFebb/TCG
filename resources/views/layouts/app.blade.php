@@ -5,18 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'TCG Vault - Marketplace TCG Certificato')</title>
-    <meta name="description" content="@yield('description', 'Compra, vendi e scambia carte da gioco rare con la protezione del sistema escrow TCG Vault.')">
+    <title>@yield('title', 'TCG SafeSwap - Marketplace TCG Certificato')</title>
+    <meta name="description" content="@yield('description', 'Compra, vendi e scambia carte da gioco rare con la protezione del sistema escrow TCG SafeSwap.')">
     <meta name="keywords" content="@yield('keywords', 'carte pokemon, magic the gathering, yugioh, marketplace tcg, carte rare')">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ url()->current() }}">
-    <meta property="og:title" content="@yield('title', 'TCG Vault')">
+    <meta property="og:title" content="@yield('title', 'TCG SafeSwap')">
     <meta property="og:description" content="@yield('description', 'Marketplace TCG Certificato')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:image" content="@yield('og_image', asset('images/og-image.jpg'))">
-    <meta property="og:site_name" content="TCG Vault">
+    <meta property="og:site_name" content="TCG SafeSwap">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('title', 'TCG Vault')">
+    <meta name="twitter:title" content="@yield('title', 'TCG SafeSwap')">
     <meta name="twitter:image" content="@yield('og_image', asset('images/og-image.jpg'))">
     @stack('schema')
     <script src="https://cdn.tailwindcss.com"></script>
@@ -48,7 +48,7 @@
                     </div>
                     <div>
                         <span class="text-white font-black text-xl tracking-wide">TCG</span>
-                        <span class="text-purple-400 font-black text-xl tracking-wide"> Vault</span>
+                        <span class="text-purple-400 font-black text-xl tracking-wide"> SafeSwap</span>
                     </div>
                 </a>
 
@@ -175,6 +175,14 @@
                     &#127811; Naruto
                 </a>
             </nav>
+            @if (auth()->check() && auth()->user()->role === 'admin')
+    <nav class="flex items-center justify-center gap-1 pb-2 overflow-x-auto md:flex hidden">
+        <a href="{{ route('admin.cards') }}"
+            class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-purple-900/50 transition whitespace-nowrap">
+            🛠 Pannello Admin
+        </a>
+    </nav>
+@endif
             @if (auth()->check() && auth()->user()->role === 'validator')
                 <nav class="flex items-center justify-center gap-1 pb-2 overflow-x-auto md:flex hidden"
                     style="-ms-overflow-style: none; scrollbar-width: none;">
@@ -329,10 +337,14 @@
         Paga €{{ number_format(auth()->user()->shipping_debt_amount, 2) }} ora
     </button>
 </form>
-            <a href="{{ route('dismiss.debt.modal') }}"
-   class="block w-full py-3 rounded-xl font-bold text-gray-400 text-sm border border-purple-900/50">
-    Continua a sfogliare il marketplace
-</a>
+            <form method="POST" action="{{ route('dismiss.debt.modal') }}">
+    @csrf
+    <input type="hidden" name="redirect" value="{{ route('marketplace.index') }}">
+    <button type="submit"
+        class="block w-full py-3 rounded-xl font-bold text-gray-400 text-sm border border-purple-900/50">
+        Continua a sfogliare il marketplace
+    </button>
+</form>
         </div>
     </div>
 </div>
@@ -342,7 +354,7 @@
 
     <footer class="mt-20 border-t border-purple-900/30">
         <div class="max-w-7xl mx-auto px-6 py-8 text-center">
-            <p class="text-gray-600 text-xs">TCG Vault - Marketplace TCG Certificato</p>
+            <p class="text-gray-600 text-xs">TCG SafeSwap - Marketplace TCG Certificato</p>
             <div class="flex justify-center gap-6 mt-3">
                 <a href="{{ route('privacy') }}" class="text-gray-600 text-xs hover:text-purple-400 transition">
                     Privacy Policy
